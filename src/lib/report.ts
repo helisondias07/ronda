@@ -109,6 +109,7 @@ img.diff{display:block;max-width:100%;height:auto;margin:.6rem 0;border:1px soli
 <main>
 <p>Este laudo não altera a loja. Não pagou. Não garante que detecta tudo. Sugestão = hipótese, apply: false. Figma não foi comparado.</p>
 ${report.journey ? `<p>Jornada: ${escapeHtml(report.journey.name)} · ${escapeHtml(report.journey.source)} · ${escapeHtml(report.journey.stepIds.join(" → "))} · para antes de pagar</p>` : ""}
+${report.run ? `<p>Execução local · id ${escapeHtml(report.run.id)} · início ${escapeHtml(report.run.startedAt)} UTC · fim ${escapeHtml(report.run.finishedAt)} UTC · ${report.run.durationMs} ms</p>` : ""}
 <ol>${rows}</ol>
 ${(report.visual || [])
   .map((v) => {

@@ -112,6 +112,12 @@ export type Report = {
     actionWarnings?: string[];
     stopBeforePayment: true;
   };
+  run?: {
+    id: string;
+    startedAt: string;
+    finishedAt: string;
+    durationMs: number;
+  };
 };
 
 export type VisualBox = {

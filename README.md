@@ -9,6 +9,7 @@ O site publicado só **mostra** um `report.json`. Ele **não busca URL** (isolam
 | Função | Como |
 |---|---|
 | Fixture Demo QA | `npm run ronda` — sequência fixa validada (5 etapas); cliques só nos quatro controles e destinos revisados do fixture. JSON de jornada customizado é recusado; laudo registra `stopped_before_payment`, print+sha256, h1/título |
+| Procedência do laudo | JSON/HTML traz UUID da execução, início/fim UTC e duração; não inclui dados do host nem habilita alvo remoto |
 | PNG de referência | `--ref-png` + `--ref-step` + `--viewport 1280x720` no PC; diff em `ronda-out/report.html` (`<img src="diff-….png">`). O visor Hobby **não** lê disco. **Não é Figma.** |
 | Institucionais | allowlist `sobre.html`, `politica.html` |
 | Links / botões com href | GET same-origin, teto 80, timeout 8s; mailto/externo/script ignorados |

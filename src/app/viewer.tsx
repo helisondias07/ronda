@@ -195,6 +195,11 @@ export function Viewer() {
                 ? ` · jornada ${report.journey.name} (${report.journey.stepIds.join(" → ")}) · para antes de pagar`
                 : ""}
             </p>
+            {report.run ? (
+              <p className="muted mono">
+                Execução local {report.run.id} · início {report.run.startedAt} UTC · fim {report.run.finishedAt} UTC · {report.run.durationMs} ms
+              </p>
+            ) : null}
             {report.journey?.actions?.length ? (
               <details>
                 <summary>Ver configuração registrada da jornada</summary>

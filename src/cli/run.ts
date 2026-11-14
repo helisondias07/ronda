@@ -3,6 +3,7 @@
  * Nunca preenche cartão, nunca chama checkoutComplete, nunca grava tema.
  */
 import http from "node:http";
+import { randomUUID } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -86,6 +87,9 @@ async function main(): Promise<void> {
 
   assertReportOnly(false);
   const journey = loadJourney();
+  const runId = randomUUID();
+  const runStartedAtMs = Date.now();
+  const runStartedAt = new Date(runStartedAtMs).toISOString();
   if (!isBuiltInFixtureJourney(journey)) {
     throw new Error("política: execução restrita à jornada exata do fixture controlado; jornada configurada foi bloqueada");
   }
@@ -283,6 +287,13 @@ async function main(): Promise<void> {
       report.error = `${report.error ? `${report.error}; ` : ""}fixture cleanup: ${String(err)}`;
     }
 
+    const runFinishedAtMs = Date.now();
+    report.run = {
+      id: runId,
+      startedAt: runStartedAt,
+      finishedAt: new Date(runFinishedAtMs).toISOString(),
+      durationMs: Math.max(0, runFinishedAtMs - runStartedAtMs),
+    };
     const done = finalizeReport(report);
     try {
       fs.mkdirSync(OUT, { recursive: true });

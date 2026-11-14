@@ -30,6 +30,19 @@ function pickString(record: Record<string, unknown>, keys: string[]): string | u
   return undefined;
 }
 
+function asRun(value: unknown): Report["run"] {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return undefined;
+  const run = value as Record<string, unknown>;
+  const id = typeof run.id === "string" && run.id.length <= 128 ? run.id : undefined;
+  const startedAt = typeof run.startedAt === "string" ? run.startedAt : undefined;
+  const finishedAt = typeof run.finishedAt === "string" ? run.finishedAt : undefined;
+  const durationMs = typeof run.durationMs === "number" ? run.durationMs : NaN;
+  if (!id || !startedAt || !finishedAt || !Number.isFinite(Date.parse(startedAt)) || !Number.isFinite(Date.parse(finishedAt)) || !Number.isFinite(durationMs) || durationMs < 0) {
+    return undefined;
+  }
+  return { id, startedAt, finishedAt, durationMs };
+}
+
 /** Lê suggestion.text / hypothesis / string; objetos desconhecidos viram JSON, nunca [object Object]. */
 export function formatSuggestion(value: unknown): string | undefined {
   if (value == null || value === "") return undefined;
@@ -182,6 +195,7 @@ export function parseReport(raw: string): { ok: true; report: Report } | { ok: f
       pages: Array.isArray(data.pages) ? data.pages.map(asPageFacts).filter((page): page is PageFacts => Boolean(page)) : [],
       visual: Array.isArray(data.visual) ? data.visual.map(asVisual) : [],
       journey: asJourney(data.journey),
+      run: asRun(data.run),
       isolation: {
         hostedFetch: false,
         methods: "GET",
