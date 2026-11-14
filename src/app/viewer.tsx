@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { isPassing } from "@/lib/report";
+import { isPassing, localFileName } from "@/lib/report";
 import { describeScreenshot, parseReport, stepLabel } from "@/lib/viewer-parse";
 import type { Report } from "@/lib/types";
 
@@ -284,6 +284,29 @@ export function Viewer() {
                       <p className="hyp">
                         {v.hypothesis} <em>figma: false · apply: false</em>
                       </p>
+                      {(() => {
+                        const diff = describeScreenshot(v.diffPath);
+                        if (diff.src) {
+                          return (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              className="diff"
+                              src={diff.src}
+                              alt={`diff ${v.step} ${v.viewport.width}x${v.viewport.height}`}
+                              width={v.viewport.width}
+                              height={v.viewport.height}
+                            />
+                          );
+                        }
+                        if (!v.diffPath) return null;
+                        return (
+                          <p className="muted">
+                            Diff no disco: {localFileName(v.diffPath)}. Abra{" "}
+                            <span className="mono">ronda-out/report.html</span> no PC para ver o PNG.
+                            Este Hobby não lê o arquivo e não envia a imagem.
+                          </p>
+                        );
+                      })()}
                     </li>
                   ))}
                 </ol>

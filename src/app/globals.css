@@ -142,7 +142,7 @@ ol.plain li { display: list-item; margin: 0.35rem 0; }
   font: 0.82rem/1.4 var(--font-mono);
   color: var(--suave);
 }
-.shot-img { display: block; max-width: 100%; height: auto; }
+.shot-img, img.diff { display: block; max-width: 100%; height: auto; border: 1px solid var(--linha); background: #fff; }
 
 .console {
   background: var(--carvao);

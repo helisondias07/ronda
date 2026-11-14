@@ -59,4 +59,27 @@ describe("visual-png", () => {
     expect(result.mismatchRatio).toBe(0);
     expect(result.source).toBe("user-png");
   });
+
+  it("grava PNG de diff legível quando os pixels diferem", () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "ronda-vis-"));
+    const actual = path.join(dir, "actual.png");
+    const reference = path.join(dir, "ref.png");
+    const diffPath = path.join(dir, "diff.png");
+    fs.writeFileSync(actual, solidPng(8, 8, [255, 0, 0]));
+    fs.writeFileSync(reference, solidPng(8, 8, [0, 0, 255]));
+    const result = comparePngFiles({
+      step: "home",
+      actualPath: actual,
+      referencePath: reference,
+      viewport: { width: 8, height: 8 },
+      diffPath,
+    });
+    expect(result.pass).toBe(false);
+    expect(result.diffPath).toBe(diffPath);
+    expect(fs.existsSync(diffPath)).toBe(true);
+    const png = PNG.sync.read(fs.readFileSync(diffPath));
+    expect(png.width).toBe(8);
+    expect(png.height).toBe(8);
+    expect(png.data.byteLength).toBe(8 * 8 * 4);
+  });
 });

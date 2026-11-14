@@ -9,7 +9,7 @@ O site publicado só **mostra** um `report.json`. Ele **não busca URL** (isolam
 | Função | Como |
 |---|---|
 | Fixture Demo QA | `npm run ronda` — 5 etapas, `stopped_before_payment`, print+sha256, h1/título |
-| PNG de referência | `--ref-png` + `--ref-step` + `--viewport 1280x720` no PC; diff local. **Não é Figma.** |
+| PNG de referência | `--ref-png` + `--ref-step` + `--viewport 1280x720` no PC; diff em `ronda-out/report.html` (`<img src="diff-….png">`). O visor Hobby **não** lê disco. **Não é Figma.** |
 | Institucionais | allowlist `sobre.html`, `politica.html` |
 | Links / botões com href | GET same-origin, teto 80, timeout 8s; mailto/externo/script ignorados |
 | Console | só `pageerror` / `console.error` first-party |

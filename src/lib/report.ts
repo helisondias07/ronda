@@ -47,6 +47,10 @@ export function isPassing(report: Report): boolean {
   );
 }
 
+export function localFileName(filePath: string): string {
+  return filePath.replace(/\\/g, "/").split("/").pop() || filePath;
+}
+
 export function renderHtml(report: Report): string {
   const ok = isPassing(report);
   const rows = report.steps
@@ -79,6 +83,7 @@ main{max-width:40rem;margin:auto;padding:1.2rem;background:#f7f4ec}
 ol{padding:0;list-style:none} li{display:grid;grid-template-columns:2.5rem 1fr;margin:.6rem 0}
 .shot{margin:.35rem 0;padding:.5rem;border:1px dashed #c9c2b3;font:14px/1.4 "IBM Plex Mono",ui-monospace,monospace}
 .hyp{font-size:.92rem;color:#5a564e}
+img.diff{display:block;max-width:100%;height:auto;margin:.6rem 0;border:1px solid #c9c2b3;background:#fff}
 @media print{body,header,main{background:#fff;color:#000}}
 </style>
 </head>
@@ -91,6 +96,15 @@ ol{padding:0;list-style:none} li{display:grid;grid-template-columns:2.5rem 1fr;m
 <main>
 <p>Este laudo não altera a loja. Não pagou. Não garante que detecta tudo. Sugestão = hipótese, apply: false. Figma não foi comparado.</p>
 <ol>${rows}</ol>
+${(report.visual || [])
+  .map((v) => {
+    const name = v.diffPath ? localFileName(v.diffPath) : "";
+    const img = name
+      ? `<img class="diff" src="${escapeHtml(name)}" alt="diff ${escapeHtml(v.step)} ${v.viewport.width}x${v.viewport.height}" width="${v.viewport.width}" height="${v.viewport.height}">`
+      : "<p>sem PNG de diff neste passo</p>";
+    return `<section><h2>PNG local · ${escapeHtml(v.step)}</h2><p>${v.viewport.width}×${v.viewport.height} · figma: false · apply: false</p>${img}<p class="hyp">${escapeHtml(v.hypothesis)}</p></section>`;
+  })
+  .join("")}
 <p>Links: ${(report.links || []).length} · institucionais: ${(report.institutional || []).length}</p>
 <p>Figma: ${escapeHtml((report.figma && report.figma.reason) || "indisponível")}</p>
 <p>Login: ${escapeHtml((report.auth && report.auth.reason) || "indisponível")}</p>
