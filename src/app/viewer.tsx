@@ -115,12 +115,14 @@ export function Viewer() {
           </ol>
           <p className="muted">
             Sem OpenCode Go, sem chave de LLM, sem Admin Wake, sem pedido. Esta página <strong>não
-            busca URL</strong> (evita SSRF). Preview localhost só com{" "}
-            <code>--autorizo-este-ambiente</code>. Não detecta tudo.
+            busca URL</strong>. Preview só aceita loopback literal <code>127.0.0.1</code> ou <code>[::1]</code>, com{" "}
+            <code>--autorizo-este-ambiente</code>; DNS e hosts remotos são recusados. Isso restringe o alvo, mas não
+            comprova isolamento geral de rede; não rodamos teste real de rede nem simulação de DNS rebinding.
           </p>
           <p>
             <strong>Já funciona:</strong> jornada demo configurável (JSON local, teto 8 etapas, obrigatório
-            parar antes de pagar); institucionais da allowlist; GET same-origin com teto e bloqueio SSRF;
+            parar antes de pagar); institucionais da allowlist; GET same-origin com teto 80 no CLI; fixture ou loopback
+            literal, sem nomes DNS ou destinos remotos;
             console first-party mascarado; título/h1 e sinais HTML básicos de acessibilidade (heurística parcial,
             não é auditoria WCAG); laudo JSON/HTML. <strong>Ainda não:</strong> Figma, login, loja
             de cliente, Nuvemshop, correção do tema, cobrança. Hospedagem: Vercel Hobby — uso pessoal ou não comercial (
