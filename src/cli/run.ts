@@ -8,7 +8,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
 import { resolveTarget } from "../lib/allowlist";
-import { assertNotPaid, assertReportOnly, isPaymentCompletePath } from "../lib/policy";
+import { assertNotPaid, assertReportOnly, isAllowedBrowserRequest, isPaymentCompletePath } from "../lib/policy";
 import { detectScribanError } from "../lib/scriban";
 import { filterConsole } from "../lib/console-filter";
 import { finalizeReport, isPassing, renderHtml } from "../lib/report";
@@ -84,7 +84,6 @@ async function main(): Promise<void> {
   const target = resolveTarget({
     baseUrl: arg("--base-url"),
     authorize: hasFlag("--autorizo-este-ambiente"),
-    allowHost: process.env.RONDA_ALLOW_HOST,
   });
 
   assertReportOnly(false);
@@ -127,7 +126,16 @@ async function main(): Promise<void> {
   fs.mkdirSync(OUT, { recursive: true });
 
   const browser = await chromium.launch({ headless: true });
-  const page = await browser.newPage({ viewport });
+  const context = await browser.newContext({ viewport, serviceWorkers: "block" });
+  const page = await context.newPage();
+  await page.route("**/*", async (route) => {
+    const request = route.request();
+    if (!isAllowedBrowserRequest({ requestUrl: request.url(), origin, method: request.method() })) {
+      await route.abort("blockedbyclient");
+      return;
+    }
+    await route.continue();
+  });
   const rawConsole: string[] = [];
   let documentStatus = 0;
   page.on("pageerror", (e) => rawConsole.push(String(e)));
@@ -149,6 +157,9 @@ async function main(): Promise<void> {
       }
       if (step.click) {
         await page.getByRole("link", { name: step.click, exact: true }).click();
+      }
+      if (isPaymentCompletePath(new URL(page.url()).pathname)) {
+        throw new Error("política: a Ronda bloqueia confirmação de pedido");
       }
       const html = await page.content();
       htmls.push(html);
@@ -206,6 +217,7 @@ async function main(): Promise<void> {
         stopped_before_payment: Boolean(step.stop),
       };
       report.steps.push(entry);
+      if (step.stop) break;
     }
   } catch (err) {
     failed = true;

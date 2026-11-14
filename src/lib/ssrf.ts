@@ -1,4 +1,5 @@
-const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]", "::1"]);
+import { isIP } from "node:net";
+
 const METADATA_HOSTS = new Set(["metadata.google.internal", "metadata.goog"]);
 
 export type SsrfVerdict =
@@ -36,12 +37,7 @@ export function classifyFetchUrl(href: string, opts: { allowLocal: boolean }): S
   if (METADATA_HOSTS.has(host) || host === "169.254.169.254") {
     return { ok: false, reason: "metadata" };
   }
-  if (isPrivateIPv4(host) || host.endsWith(".internal")) {
-    if (opts.allowLocal && LOCAL_HOSTS.has(host)) return { ok: true };
-    return { ok: false, reason: "private" };
-  }
-  if (LOCAL_HOSTS.has(host) && !opts.allowLocal) {
-    return { ok: false, reason: "private" };
-  }
-  return { ok: true };
+  // Only literal loopback is permitted. DNS names are denied to prevent rebinding.
+  if (opts.allowLocal && (host === "127.0.0.1" || host === "::1") && isIP(host)) return { ok: true };
+  return { ok: false, reason: "private" };
 }

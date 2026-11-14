@@ -17,4 +17,24 @@ describe("ssrf", () => {
     expect(classifyFetchUrl("http://127.0.0.1/x", { allowLocal: false }).reason).toBe("private");
     expect(classifyFetchUrl("http://127.0.0.1/x", { allowLocal: true }).ok).toBe(true);
   });
+
+  it("blocks private IPv4, IPv6 and IPv4-mapped IPv6 even with local access", () => {
+    for (const href of [
+      "http://10.0.0.1/",
+      "http://169.254.169.254/",
+      "http://[fc00::1]/",
+      "http://[fe80::1]/",
+      "http://[::ffff:127.0.0.1]/",
+      "http://[::ffff:169.254.169.254]/",
+    ]) {
+      expect(classifyFetchUrl(href, { allowLocal: true }).ok, href).toBe(false);
+    }
+  });
+
+  it("refuses DNS hostnames before resolution, including a public-to-private rebinding name", () => {
+    expect(classifyFetchUrl("https://public-rebind.example/", { allowLocal: true })).toEqual({
+      ok: false,
+      reason: "private",
+    });
+  });
 });

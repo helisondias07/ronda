@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { assertNotPaid, assertReportOnly, isForbiddenMutation, isPaymentCompletePath } from "./policy";
+import { assertNotPaid, assertReportOnly, isAllowedBrowserRequest, isForbiddenMutation, isPaymentCompletePath } from "./policy";
 
 describe("policy", () => {
   it("blocks checkout complete paths", () => {
@@ -7,6 +7,14 @@ describe("policy", () => {
     expect(isPaymentCompletePath("/checkout/confirmation")).toBe(true);
     expect(isPaymentCompletePath("/checkout")).toBe(false);
     expect(isForbiddenMutation("checkoutComplete")).toBe(true);
+  });
+
+  it("browser only allows same-origin GETs and blocks order completion", () => {
+    const origin = "http://127.0.0.1:4173";
+    expect(isAllowedBrowserRequest({ requestUrl: `${origin}/home.html`, origin, method: "GET" })).toBe(true);
+    expect(isAllowedBrowserRequest({ requestUrl: "http://169.254.169.254/latest", origin, method: "GET" })).toBe(false);
+    expect(isAllowedBrowserRequest({ requestUrl: `${origin}/checkout/complete`, origin, method: "GET" })).toBe(false);
+    expect(isAllowedBrowserRequest({ requestUrl: `${origin}/api/cart`, origin, method: "POST" })).toBe(false);
   });
 
   it("throws if card was filled", () => {

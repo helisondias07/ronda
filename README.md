@@ -58,7 +58,7 @@ O visor Hobby **não** recebe o PNG. Diff fica em `ronda-out/diff-*.png`.
 
 - Processo da jornada: Playwright local. Processo do visor: Next.js sem `fetch` de alvo.
 - Só GET. Sem `file:`, `gopher:`, credencial na URL.
-- Origin = fixture ou localhost/`RONDA_ALLOW_HOST` com `--autorizo-este-ambiente`.
+- Origin limitado a fixture ou literal loopback 127.0.0.1 / [::1], com --autorizo-este-ambiente; nomes DNS e destinos remotos estao bloqueados.
 - Teto: 30 páginas, 80 links, 2 redirects, 8s.
 
 ## Deploy (sem cobrar)

@@ -85,8 +85,9 @@ export function parseJourneyFile(raw: unknown, source = "journey.json"): Journey
       stop: Boolean(step.stop),
     });
   }
-  if (!steps.some((s) => s.stop)) {
-    return { ok: false, message: "jornada: alguma etapa precisa de stop: true (antes do pagamento)" };
+  const stopIndexes = steps.flatMap((step, index) => step.stop ? [index] : []);
+  if (stopIndexes.length !== 1 || stopIndexes[0] !== steps.length - 1) {
+    return { ok: false, message: "jornada: stop: true deve aparecer uma vez, na última etapa" };
   }
   const name = typeof rec.name === "string" && rec.name.trim() ? rec.name.trim().slice(0, 100) : "jornada-local";
   return {

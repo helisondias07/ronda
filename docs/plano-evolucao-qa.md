@@ -7,9 +7,13 @@ Acesso 14/11/2026. **Não é oferta e não está implementado.** O visor publica
 | Superfície | O que faz | O que não faz |
 |---|---|---|
 | Site Hobby | Mostra `report.json` | Não busca URL de loja (SSRF) |
-| CLI no PC | Playwright no fixture ou origin **autorizado** | Produção de cliente; POST/PUT/DELETE; pedido |
+| CLI no PC | Playwright no fixture ou origin **autorizado**; intercepta same-origin GET e barra outros métodos, origens externas e confirmação de pedido | Produção de cliente; POST/PUT/DELETE; pedido |
 | Perfil de browser | Um por loja (ADX) | Reusar sessão entre lojas |
 | Página capturada | Título/h1 + sinais HTML básicos (`alt`, rótulo de input, texto de botão/link) | Não é WCAG/axe; não valida teclado, leitor de tela, contraste ou UI montada após captura |
+
+## Limites de verificacao de rede
+
+O CLI foi executado contra o fixture. Os testes de links usam `fetch` injetado; nao houve teste de rede real dos bloqueios do Playwright nem simulacao de DNS rebinding. A politica atual recusa nomes DNS e restringe o alvo a fixture/loopback literal, mas isso nao e certificacao geral de isolamento de rede.
 
 ## Figma (fase posterior, sem fingir)
 

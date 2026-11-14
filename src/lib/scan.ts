@@ -1,3 +1,4 @@
+import { isIP } from "node:net";
 import { classifyFetchUrl } from "./ssrf";
 import { LIMITS } from "./limits";
 import type { InstitutionalPage, LinkCheck } from "./types";
@@ -30,6 +31,10 @@ export function planLink(href: string, origin: string, allowLocal: boolean): Lin
     return { href: trimmed, verdict: "skipped-ssrf" };
   }
   if (absolute.origin !== new URL(origin).origin) {
+    const host = absolute.hostname.replace(/^\[|\]$/g, "");
+    if (isIP(host) && !classifyFetchUrl(absolute.href, { allowLocal }).ok) {
+      return { href: absolute.href, verdict: "skipped-ssrf" };
+    }
     return { href: absolute.href, verdict: "skipped-external" };
   }
   const ssrf = classifyFetchUrl(absolute.href, { allowLocal });
@@ -71,31 +76,45 @@ export async function checkPlanned(
       out.push(item);
       continue;
     }
+    const initial = planLink(item.href, item.href, true);
+    if (initial.verdict !== "ok") {
+      out.push({ ...item, verdict: initial.verdict });
+      continue;
+    }
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), LIMITS.timeoutMs);
     try {
-      const res = await fetchImpl(item.href, {
-        method: "GET",
-        redirect: "manual",
-        signal: ctrl.signal,
-      });
-      if (res.status >= 300 && res.status < 400) {
-        const loc = res.headers.get("location");
-        if (!loc) {
+      let current = initial.href;
+      let redirects = 0;
+      const visited = new Set<string>();
+      while (true) {
+        if (visited.has(current)) {
+          out.push({ ...item, verdict: "broken" });
+          break;
+        }
+        visited.add(current);
+        const res = await fetchImpl(current, {
+          method: "GET",
+          redirect: "manual",
+          signal: ctrl.signal,
+        });
+        if (res.status < 300 || res.status >= 400) {
+          out.push({ ...item, status: res.status, verdict: res.status >= 400 ? "broken" : "ok" });
+          break;
+        }
+        const location = res.headers.get("location");
+        if (!location || redirects >= LIMITS.maxRedirects) {
           out.push({ ...item, status: res.status, verdict: "broken" });
-          continue;
+          break;
         }
-        const next = planLink(loc, item.href, true);
+        const next = planLink(location, current, true);
         if (next.verdict !== "ok") {
-          out.push({ href: item.href, status: res.status, verdict: "skipped-ssrf" });
-          continue;
+          out.push({ ...item, status: res.status, verdict: next.verdict });
+          break;
         }
+        current = next.href;
+        redirects += 1;
       }
-      out.push({
-        ...item,
-        status: res.status,
-        verdict: res.status >= 400 ? "broken" : "ok",
-      });
     } catch {
       out.push({ ...item, verdict: "broken" });
     } finally {

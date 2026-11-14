@@ -8,6 +8,19 @@ export function isForbiddenMutation(name: string): boolean {
   return name === "checkoutComplete";
 }
 
+export function isAllowedBrowserRequest(input: {
+  requestUrl: string;
+  origin: string;
+  method: string;
+}): boolean {
+  try {
+    const url = new URL(input.requestUrl);
+    return url.origin === input.origin && input.method === "GET" && !isPaymentCompletePath(url.pathname);
+  } catch {
+    return false;
+  }
+}
+
 export function assertNotPaid(input: {
   pathname: string;
   cardValue: string;

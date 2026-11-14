@@ -54,4 +54,11 @@ describe("parseJourneyFile", () => {
     if (!parsed.ok) return;
     expect(parsed.journey.steps).toHaveLength(2);
   });
+
+  it("só aceita stop único na última etapa", () => {
+    const base = [{ id: "home", heading: "Home" }, { id: "checkout", heading: "Checkout", stop: true }];
+    expect(parseJourneyFile({ steps: base }).ok).toBe(true);
+    expect(parseJourneyFile({ steps: [{ ...base[0], stop: true }, base[1]] }).ok).toBe(false);
+    expect(parseJourneyFile({ steps: [base[0], { ...base[1], stop: false }] }).ok).toBe(false);
+  });
 });
