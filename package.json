@@ -9,6 +9,7 @@
     "start": "next start",
     "test": "vitest run",
     "test:watch": "vitest",
+    "sandbox:poc": "tsx tools/sandbox-poc.ts",
     "ronda": "tsx src/cli/run.ts",
     "smoke": "tsx src/cli/run.ts"
   },
