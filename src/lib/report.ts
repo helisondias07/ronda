@@ -1,5 +1,6 @@
 import type { Report, Skip } from "./types";
 import { suggest } from "./suggestions";
+import { dimLabel } from "./visual-view";
 
 const FIGMA_GAP: Skip = {
   available: false,
@@ -99,10 +100,14 @@ img.diff{display:block;max-width:100%;height:auto;margin:.6rem 0;border:1px soli
 ${(report.visual || [])
   .map((v) => {
     const name = v.diffPath ? localFileName(v.diffPath) : "";
+    const vp = `${dimLabel(v.viewport?.width)}x${dimLabel(v.viewport?.height)}`;
+    const missing = v.missing?.length
+      ? `<p class="hyp">Campo ausente: ${escapeHtml(v.missing.join(", "))} — indisponível</p>`
+      : "";
     const img = name
-      ? `<img class="diff" src="${escapeHtml(name)}" alt="diff ${escapeHtml(v.step)} ${v.viewport.width}x${v.viewport.height}" width="${v.viewport.width}" height="${v.viewport.height}">`
+      ? `<img class="diff" src="${escapeHtml(name)}" alt="diff ${escapeHtml(v.step)} ${escapeHtml(vp)}">`
       : "<p>sem PNG de diff neste passo</p>";
-    return `<section><h2>PNG local · ${escapeHtml(v.step)}</h2><p>${v.viewport.width}×${v.viewport.height} · figma: false · apply: false</p>${img}<p class="hyp">${escapeHtml(v.hypothesis)}</p></section>`;
+    return `<section><h2>PNG local · ${escapeHtml(v.step)}</h2><p>${escapeHtml(dimLabel(v.viewport?.width))}×${escapeHtml(dimLabel(v.viewport?.height))} · figma: false · apply: false</p>${missing}${img}<p class="hyp">${escapeHtml(v.hypothesis || "indisponível")}</p></section>`;
   })
   .join("")}
 <p>Links: ${(report.links || []).length} · institucionais: ${(report.institutional || []).length}</p>

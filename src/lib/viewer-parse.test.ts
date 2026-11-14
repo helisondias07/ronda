@@ -9,6 +9,7 @@ import {
   parseReport,
   stepLabel,
 } from "./viewer-parse";
+import { asVisual, formatVisualSummary } from "./visual-view";
 
 describe("parseReport", () => {
   it("accepts incomplete JSON and fills suggestion plus console", () => {
@@ -130,6 +131,27 @@ describe("formatos de suggestion e console", () => {
     expect(normalizeConsoleErrors(["a", { text: "b" }])).toEqual(["a", "b"]);
     expect(formatConsoleEntry({ stack: "x" })).toBe('{"stack":"x"}');
     expect(formatConsoleEntry({ message: "ok" })).not.toBe("[object Object]");
+  });
+});
+
+describe("visual JSON parcial", () => {
+  it("não presume reference.width e marca o campo como indisponível", () => {
+    const parsed = parseReport(
+      JSON.stringify({
+        steps: [{ id: "home", pass: true, stopped_before_payment: false }],
+        visual: [{ step: "home", pass: false, hypothesis: "diff local" }],
+      }),
+    );
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+    const v = parsed.report.visual?.[0];
+    expect(v).toBeTruthy();
+    expect(v?.reference.width).toBeUndefined();
+    expect(v?.missing).toContain("reference.width");
+    expect(() => formatVisualSummary(v!)).not.toThrow();
+    expect(formatVisualSummary(v!)).toMatch(/ref indisponível×indisponível/);
+    expect(asVisual(null).missing).toContain("reference.width");
+    expect(asVisual({ reference: { path: "ref.png" } }).missing).toContain("reference.width");
   });
 });
 

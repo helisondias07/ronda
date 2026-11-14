@@ -117,4 +117,36 @@ describe("report", () => {
     expect(html).not.toMatch(/src="C:\\Users/);
     expect(html).toMatch(/figma: false/);
   });
+
+  it("renderiza visual parcial sem reference.width como indisponível", () => {
+    const html = renderHtml({
+      store: "fixture-demo-qa",
+      platform: "wake-mock",
+      target: "fixture",
+      stopped_before_payment: true,
+      consoleErrors: [],
+      detects_everything: false,
+      links: [],
+      institutional: [],
+      figma: { available: false, reason: "sem Figma neste teste" },
+      auth: { available: false, reason: "sem login neste teste" },
+      steps: [step({ id: "home" })],
+      visual: [
+        {
+          source: "user-png",
+          figma: false,
+          step: "home",
+          viewport: {},
+          reference: {},
+          actual: {},
+          pass: false,
+          hypothesis: "JSON incompleto",
+          apply: false,
+          missing: ["reference.width"],
+        },
+      ],
+    });
+    expect(html).toMatch(/indisponível/);
+    expect(html).toMatch(/Campo ausente: reference\.width/);
+  });
 });

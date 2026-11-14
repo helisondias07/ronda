@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { isPassing, localFileName } from "@/lib/report";
 import { describeScreenshot, parseReport, stepLabel } from "@/lib/viewer-parse";
+import { dimLabel, formatVisualSummary } from "@/lib/visual-view";
 import type { Report } from "@/lib/types";
 
 const EXAMPLE = {
@@ -275,12 +276,12 @@ export function Viewer() {
               <>
                 <h2>PNG de referência (local)</h2>
                 <ol className="plain">
-                  {report.visual.map((v) => (
-                    <li key={`${v.step}-${v.reference.path}`}>
-                      {v.step} · viewport {v.viewport.width}×{v.viewport.height} · captura {v.actual.width}×
-                      {v.actual.height} · ref {v.reference.width}×{v.reference.height} —{" "}
-                      {v.pass ? "ok" : "diferiu"}
-                      {v.mismatchRatio != null ? ` (${(v.mismatchRatio * 100).toFixed(2)}%)` : ""}
+                  {report.visual.map((v, i) => (
+                    <li key={`${v.step}-${v.reference.path || "sem-ref"}-${i}`}>
+                      {formatVisualSummary(v)}
+                      {v.missing?.length ? (
+                        <p className="muted">Campo ausente: {v.missing.join(", ")} — indisponível</p>
+                      ) : null}
                       <p className="hyp">
                         {v.hypothesis} <em>figma: false · apply: false</em>
                       </p>
@@ -292,9 +293,7 @@ export function Viewer() {
                             <img
                               className="diff"
                               src={diff.src}
-                              alt={`diff ${v.step} ${v.viewport.width}x${v.viewport.height}`}
-                              width={v.viewport.width}
-                              height={v.viewport.height}
+                              alt={`diff ${v.step} ${dimLabel(v.viewport.width)}x${dimLabel(v.viewport.height)}`}
                             />
                           );
                         }

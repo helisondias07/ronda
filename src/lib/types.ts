@@ -93,19 +93,26 @@ export type Report = {
   visual?: VisualCompare[];
 };
 
+export type VisualBox = {
+  path?: string;
+  width?: number;
+  height?: number;
+};
+
 export type VisualCompare = {
   source: "user-png";
   figma: false;
   step: string;
-  viewport: { width: number; height: number };
-  reference: { path: string; width: number; height: number };
-  actual: { path: string; width: number; height: number };
+  viewport: { width?: number; height?: number };
+  reference: VisualBox;
+  actual: VisualBox;
   mismatchRatio?: number;
   diffPixels?: number;
   diffPath?: string;
   pass: boolean;
   hypothesis: string;
   apply: false;
+  missing?: string[];
 };
 
 export type Target =
