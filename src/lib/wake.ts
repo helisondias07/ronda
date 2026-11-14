@@ -1,7 +1,7 @@
 import type { StepId } from "./types";
 
 export type JourneyStep = {
-  id: StepId;
+  id: StepId | string;
   heading: string;
   click?: string;
   stop?: boolean;

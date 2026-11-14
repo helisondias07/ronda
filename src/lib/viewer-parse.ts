@@ -1,5 +1,5 @@
 import { finalizeReport } from "./report";
-import type { Report, StepId, StepResult } from "./types";
+import type { PageFacts, Report, StepId, StepResult } from "./types";
 import { asVisual } from "./visual-view";
 
 export const KNOWN_STEP_IDS: StepId[] = ["home", "categoria", "produto", "carrinho", "checkout"];
@@ -60,6 +60,51 @@ export function normalizeConsoleErrors(value: unknown): string[] {
   return [formatConsoleEntry(value)];
 }
 
+function asJourney(raw: unknown): Report["journey"] | undefined {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return undefined;
+  const rec = raw as Record<string, unknown>;
+  if (rec.stopBeforePayment === false) return undefined;
+  const name = typeof rec.name === "string" ? rec.name.trim() : "";
+  const source = typeof rec.source === "string" ? rec.source.trim() : "pasted";
+  const startPath = typeof rec.startPath === "string" ? rec.startPath.trim() : "";
+  const stepIds = Array.isArray(rec.stepIds)
+    ? rec.stepIds.filter((id): id is string => typeof id === "string" && id.trim().length > 0)
+    : [];
+  if (!name || stepIds.length === 0) return undefined;
+  return {
+    name,
+    source: source || "pasted",
+    startPath: startPath || "/",
+    stepIds,
+    stopBeforePayment: true,
+  };
+}
+
+function asPageFacts(raw: unknown): PageFacts | undefined {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return undefined;
+  const rec = raw as Record<string, unknown>;
+  if (typeof rec.url !== "string") return undefined;
+  const accessibility = rec.accessibility && typeof rec.accessibility === "object" && !Array.isArray(rec.accessibility)
+    ? (rec.accessibility as Record<string, unknown>)
+    : undefined;
+  const suggestionText = formatSuggestion(rec.suggestion);
+  return {
+    url: rec.url,
+    status: typeof rec.status === "number" ? rec.status : undefined,
+    title: typeof rec.title === "string" ? rec.title : "",
+    h1: typeof rec.h1 === "string" ? rec.h1 : "",
+    pass: rec.pass === true,
+    suggestion: suggestionText ? { step: "pagina", hypothesis: suggestionText, apply: false } : undefined,
+    accessibility:
+      accessibility?.scope === "static-html-heuristic" && Array.isArray(accessibility.findings)
+        ? {
+            scope: "static-html-heuristic",
+            findings: accessibility.findings.filter((entry): entry is string => typeof entry === "string"),
+          }
+        : undefined,
+  };
+}
+
 function asStep(raw: unknown): StepResult {
   const rec = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
   const pasted = formatSuggestion(rec.suggestion);
@@ -69,9 +114,6 @@ function asStep(raw: unknown): StepResult {
   if (!rawId) {
     id = UNLABELED_STEP_ID;
     formatWarning = "formato não reconhecido: etapa sem id";
-  } else if (!KNOWN_STEP_IDS.includes(rawId as StepId)) {
-    id = rawId;
-    formatWarning = `formato não reconhecido: id "${rawId}" não é etapa da jornada`;
   } else {
     id = rawId;
   }
@@ -121,8 +163,9 @@ export function parseReport(raw: string): { ok: true; report: Report } | { ok: f
         reason:
           "sem conta de teste no Vault. A Ronda não cria cadastro, não preenche senha e não automatiza CAPTCHA/SMS/social.",
       },
-      pages: Array.isArray(data.pages) ? (data.pages as Report["pages"]) : [],
+      pages: Array.isArray(data.pages) ? data.pages.map(asPageFacts).filter((page): page is PageFacts => Boolean(page)) : [],
       visual: Array.isArray(data.visual) ? data.visual.map(asVisual) : [],
+      journey: asJourney(data.journey),
       isolation: {
         hostedFetch: false,
         methods: "GET",

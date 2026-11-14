@@ -12,7 +12,7 @@ function step(partial: Partial<StepResult> & Pick<StepResult, "id">): StepResult
 }
 
 describe("report", () => {
-  it("passes only with 5 steps and checkout stop", () => {
+  it("passes the default 5-step fixture when checkout stops", () => {
     const report: Report = {
       store: "fixture-demo-qa",
       platform: "wake-mock",
@@ -33,6 +33,34 @@ describe("report", () => {
       ],
     };
     expect(isPassing(finalizeReport(report))).toBe(true);
+  });
+
+  it("passes a shorter configurable journey that still stops before payment", () => {
+    const report: Report = {
+      store: "fixture-demo-qa",
+      platform: "wake-mock",
+      target: "fixture",
+      stopped_before_payment: true,
+      consoleErrors: [],
+      detects_everything: false,
+      links: [],
+      institutional: [],
+      figma: { available: false, reason: "teste" },
+      auth: { available: false, reason: "teste" },
+      journey: {
+        name: "curta",
+        source: "journey.json",
+        startPath: "/home.html",
+        stepIds: ["home", "checkout"],
+        stopBeforePayment: true,
+      },
+      steps: [step({ id: "home" }), step({ id: "checkout", stopped_before_payment: true })],
+    };
+    const done = finalizeReport(report);
+    expect(isPassing(done)).toBe(true);
+    expect(done.steps).toHaveLength(2);
+    expect(renderHtml(done)).toMatch(/Jornada: curta/);
+    expect(renderHtml(done)).toMatch(/home → checkout/);
   });
 
   it("attaches a suggestion without apply", () => {
@@ -148,5 +176,28 @@ describe("report", () => {
     });
     expect(html).toMatch(/indisponível/);
     expect(html).toMatch(/Campo ausente: reference\.width/);
+  });
+
+  it("inclui alertas HTML básicos no relatório sem alegar auditoria completa", () => {
+    const html = renderHtml({
+      store: "fixture-demo-qa",
+      platform: "wake-mock",
+      target: "fixture",
+      stopped_before_payment: true,
+      consoleErrors: [],
+      detects_everything: false,
+      links: [],
+      institutional: [],
+      figma: { available: false, reason: "indisponível" },
+      auth: { available: false, reason: "indisponível" },
+      steps: [step({ id: "home" })],
+      pages: [{
+        url: "http://127.0.0.1/home.html", status: 200, title: "Home", h1: "Loja", pass: true,
+        accessibility: { scope: "static-html-heuristic", findings: ["Imagem 1: falta atributo alt."] },
+      }],
+    });
+    expect(html).toMatch(/Checagem HTML básica \(heurística parcial\)/);
+    expect(html).toMatch(/Imagem 1: falta atributo alt/);
+    expect(html).not.toMatch(/WCAG completa/i);
   });
 });

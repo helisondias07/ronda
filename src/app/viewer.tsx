@@ -29,6 +29,13 @@ const EXAMPLE = {
     available: false,
     reason: "sem conta de teste no Vault. A Ronda não cria cadastro, não preenche senha e não automatiza CAPTCHA/SMS/social.",
   },
+  journey: {
+    name: "fixture-demo-qa",
+    source: "builtin",
+    startPath: "/home.html",
+    stepIds: ["home", "categoria", "produto", "carrinho", "checkout"],
+    stopBeforePayment: true,
+  },
   steps: [
     { id: "home", url: "http://127.0.0.1/home.html", pass: true, stopped_before_payment: false, screenshot: "ronda-out/home.png" },
     { id: "categoria", url: "http://127.0.0.1/categoria.html", pass: true, stopped_before_payment: false, screenshot: "ronda-out/categoria.png" },
@@ -100,8 +107,9 @@ export function Viewer() {
               <code>npm test</code>.
             </li>
             <li>
-              Jornada no fixture: <code>npm run ronda</code>. Gera <code>ronda-out/report.json</code> e
-              prints. Para no “Forma de pagamento”.
+              Jornada no fixture: <code>npm run ronda</code> (ou <code>--journey fixture/journey.json</code>).
+              Gera <code>ronda-out/report.json</code> e prints. Para no “Forma de pagamento”. Não paga e não
+              altera o site.
             </li>
             <li>Cole o JSON abaixo. Sugestão de correção vem no laudo; aplicar no tema é outro fluxo.</li>
           </ol>
@@ -111,10 +119,10 @@ export function Viewer() {
             <code>--autorizo-este-ambiente</code>. Não detecta tudo.
           </p>
           <p>
-            <strong>Já funciona:</strong> jornada fixture 5 etapas até “Forma de pagamento”; institucionais
-            da allowlist; GET same-origin com teto e bloqueio SSRF; console first-party mascarado; laudo
-            JSON/HTML. <strong>Ainda não:</strong> Figma, login, loja de cliente, Nuvemshop, correção do
-            tema, cobrança. Hospedagem: Vercel Hobby — uso pessoal ou não comercial (
+            <strong>Já funciona:</strong> jornada demo configurável (JSON local, teto 8 etapas, obrigatório
+            parar antes de pagar); institucionais da allowlist; GET same-origin com teto e bloqueio SSRF;
+            console first-party mascarado; laudo JSON/HTML. <strong>Ainda não:</strong> Figma, login, loja
+            de cliente, Nuvemshop, correção do tema, cobrança. Hospedagem: Vercel Hobby — uso pessoal ou não comercial (
             <a href="https://vercel.com/legal/terms">Termos §4</a>
             ).
           </p>
@@ -175,6 +183,9 @@ export function Viewer() {
             ) : null}
             <p>
               Alvo: {report.target} · plataforma: {report.platform}
+              {report.journey
+                ? ` · jornada ${report.journey.name} (${report.journey.stepIds.join(" → ")}) · para antes de pagar`
+                : ""}
             </p>
             <ol className="steps">
               {report.steps.map((step, i) => (
@@ -231,6 +242,17 @@ export function Viewer() {
                     <li key={pg.url}>
                       {pg.url} — {pg.pass ? "ok" : "falhou"} {pg.status ? `(${pg.status})` : ""}{" "}
                       {pg.h1 ? `h1: ${pg.h1}` : "sem h1"}
+                      {pg.accessibility ? (
+                        <div className="muted">
+                          Checagem HTML básica (heurística parcial): {pg.accessibility.findings.length} alerta
+                          {pg.accessibility.findings.length === 1 ? " potencial." : "s potenciais."}
+                          {pg.accessibility.findings.length ? (
+                            <ul>
+                              {pg.accessibility.findings.map((finding, i) => <li key={`${pg.url}-a11y-${i}`}>{finding}</li>)}
+                            </ul>
+                          ) : " Nenhum sinal foi encontrado nestas checagens."}
+                        </div>
+                      ) : null}
                       {pg.suggestion ? (
                         <p className="hyp">
                           Hipótese (não é patch): {pg.suggestion.hypothesis} <em>apply: false</em>

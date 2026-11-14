@@ -115,6 +115,44 @@ describe("parseReport", () => {
     expect(parsed.report.steps[1].id).toBe("produto");
     expect(parsed.report.steps[1].suggestion?.hypothesis).toMatch(/Scriban/);
   });
+
+  it("preserva jornada configurável e id fora da lista clássica sem aviso", () => {
+    const parsed = parseReport(
+      JSON.stringify({
+        journey: {
+          name: "curta",
+          source: "fixture/journey.json",
+          startPath: "/home.html",
+          stepIds: ["home", "pagamento"],
+          stopBeforePayment: true,
+        },
+        steps: [
+          { id: "home", pass: true, stopped_before_payment: false },
+          { id: "pagamento", pass: true, stopped_before_payment: true },
+        ],
+      }),
+    );
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+    expect(parsed.report.journey?.name).toBe("curta");
+    expect(parsed.report.journey?.stopBeforePayment).toBe(true);
+    expect(parsed.report.steps[1].id).toBe("pagamento");
+    expect(parsed.report.steps[1].formatWarning).toBeUndefined();
+  });
+
+  it("preserva checagens HTML básicas e ignora páginas com formato inválido", () => {
+    const parsed = parseReport(JSON.stringify({
+      steps: [{ id: "home", pass: true, stopped_before_payment: false }],
+      pages: [
+        { url: "http://127.0.0.1/home.html", pass: true, status: 200, title: "Demo", h1: "Loja", accessibility: { scope: "static-html-heuristic", findings: ["Imagem 1: falta atributo alt."] } },
+        null,
+      ],
+    }));
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+    expect(parsed.report.pages).toHaveLength(1);
+    expect(parsed.report.pages?.[0].accessibility?.findings).toEqual(["Imagem 1: falta atributo alt."]);
+  });
 });
 
 describe("formatos de suggestion e console", () => {

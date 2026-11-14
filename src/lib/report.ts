@@ -18,12 +18,15 @@ export function finalizeReport(report: Report): Report {
     return suggestion ? { ...step, suggestion } : step;
   });
   const passed = steps.filter((s) => s.pass).length;
-  const stopped = Boolean(report.stopped_before_payment && steps.some((s) => s.id === "checkout" && s.pass));
+  const stopped = Boolean(
+    report.stopped_before_payment && steps.some((s) => s.stopped_before_payment && s.pass),
+  );
   return {
     ...report,
     steps,
     stopped_before_payment: stopped,
-    error: passed === 5 && stopped ? undefined : report.error,
+    error: passed === steps.length && steps.length > 0 && stopped ? undefined : report.error,
+    journey: report.journey,
     detects_everything: false,
     links: report.links || [],
     institutional: report.institutional || [],
@@ -42,9 +45,10 @@ export function finalizeReport(report: Report): Report {
 
 export function isPassing(report: Report): boolean {
   return (
-    report.steps.length === 5 &&
+    report.steps.length > 0 &&
     report.steps.every((s) => s.pass) &&
-    report.stopped_before_payment === true
+    report.stopped_before_payment === true &&
+    report.steps.some((s) => s.stopped_before_payment)
   );
 }
 
@@ -69,6 +73,14 @@ export function renderHtml(report: Report): string {
       return `<li><span class="n">${n}</span><div><strong>${s.id}</strong> ${mark}${stop}<div class="shot">${escapeHtml(shot)}${escapeHtml(shotMeta)}</div>${hyp}</div></li>`;
     })
     .join("");
+  const pageRows = (report.pages || []).map((page) => {
+    const findings = page.accessibility?.findings || [];
+    const alertLabel = findings.length === 1 ? "1 alerta potencial" : `${findings.length} alertas potenciais`;
+    const a11y = page.accessibility
+      ? `<p class="hyp">Checagem HTML básica (heurística parcial): ${alertLabel}.</p>${findings.length ? `<ul>${findings.map((finding) => `<li>${escapeHtml(finding)}</li>`).join("")}</ul>` : "<p>Nenhum sinal encontrado nestas checagens.</p>"}`
+      : "";
+    return `<section><h2>Página · ${escapeHtml(page.url)}</h2><p>${page.pass ? "respondeu" : "revisar"} · HTTP ${page.status ?? "indisponível"} · title: ${escapeHtml(page.title)} · h1: ${escapeHtml(page.h1 || "ausente")}</p>${a11y}</section>`;
+  }).join("");
   return `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -96,6 +108,7 @@ img.diff{display:block;max-width:100%;height:auto;margin:.6rem 0;border:1px soli
 </header>
 <main>
 <p>Este laudo não altera a loja. Não pagou. Não garante que detecta tudo. Sugestão = hipótese, apply: false. Figma não foi comparado.</p>
+${report.journey ? `<p>Jornada: ${escapeHtml(report.journey.name)} · ${escapeHtml(report.journey.source)} · ${escapeHtml(report.journey.stepIds.join(" → "))} · para antes de pagar</p>` : ""}
 <ol>${rows}</ol>
 ${(report.visual || [])
   .map((v) => {
@@ -111,6 +124,7 @@ ${(report.visual || [])
   })
   .join("")}
 <p>Links: ${(report.links || []).length} · institucionais: ${(report.institutional || []).length}</p>
+${pageRows}
 <p>Figma: ${escapeHtml((report.figma && report.figma.reason) || "indisponível")}</p>
 <p>Login: ${escapeHtml((report.auth && report.auth.reason) || "indisponível")}</p>
 ${report.error ? `<pre>${escapeHtml(report.error)}</pre>` : ""}

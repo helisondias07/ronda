@@ -8,12 +8,13 @@ O site publicado só **mostra** um `report.json`. Ele **não busca URL** (isolam
 
 | Função | Como |
 |---|---|
-| Fixture Demo QA | `npm run ronda` — 5 etapas, `stopped_before_payment`, print+sha256, h1/título |
+| Fixture Demo QA | `npm run ronda` — jornada builtin (5 etapas) ou `--journey fixture/journey.json`; `stopped_before_payment`, print+sha256, h1/título |
 | PNG de referência | `--ref-png` + `--ref-step` + `--viewport 1280x720` no PC; diff em `ronda-out/report.html` (`<img src="diff-….png">`). O visor Hobby **não** lê disco. **Não é Figma.** |
 | Institucionais | allowlist `sobre.html`, `politica.html` |
 | Links / botões com href | GET same-origin, teto 80, timeout 8s; mailto/externo/script ignorados |
 | Console | só `pageerror` / `console.error` first-party |
 | 500 Scriban | JSON `status_code: 500` = falha, mesmo com HTTP 200 |
+| Checagem HTML básica | Título, h1, `alt` de imagem e rótulo de controle; heurística parcial, não auditoria WCAG |
 | SSRF | bloqueia IP privado, metadata, credencial na URL, redirect para 10.x |
 | Sugestão | hipótese no laudo com `apply: false` |
 | Visor | cola JSON; exemplo é o fixture, rotulado |
@@ -40,6 +41,7 @@ npm install
 npx playwright install chromium
 npm test
 npm run ronda
+npm run ronda -- --journey fixture/journey.json
 npm run dev
 ```
 
@@ -76,6 +78,7 @@ Custo variável do MVP local: US$ 0 (Playwright OSS). Checkly Starter / Tracefox
 
 - Sem demo Awake / preview `fbits.storefront` neste repo (só fixture).
 - Sem Figma e sem jornada autenticada.
+- Checagem de acessibilidade limitada ao HTML capturado; não valida WCAG, teclado ou leitor de tela.
 - Sem adapter Nuvemshop. Chromium ≠ Safari real.
 - `npm audit` pode listar vulns de transitivos; não forçamos `--force`.
 

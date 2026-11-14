@@ -36,6 +36,10 @@ export type PageFacts = {
   h1: string;
   pass: boolean;
   suggestion?: Suggestion;
+  accessibility?: {
+    scope: "static-html-heuristic";
+    findings: string[];
+  };
 };
 
 export type IsolationNote = {
@@ -91,6 +95,13 @@ export type Report = {
   pages?: PageFacts[];
   isolation?: IsolationNote;
   visual?: VisualCompare[];
+  journey?: {
+    name: string;
+    source: string;
+    startPath: string;
+    stepIds: string[];
+    stopBeforePayment: true;
+  };
 };
 
 export type VisualBox = {

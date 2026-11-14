@@ -12,7 +12,7 @@ import { assertNotPaid, assertReportOnly, isPaymentCompletePath } from "../lib/p
 import { detectScribanError } from "../lib/scriban";
 import { filterConsole } from "../lib/console-filter";
 import { finalizeReport, isPassing, renderHtml } from "../lib/report";
-import { FIXTURE_JOURNEY } from "../lib/wake";
+import { defaultJourney, parseJourneyFile, type LoadedJourney } from "../lib/journey";
 import { checkInstitutional, checkPlanned, extractHrefs, planLinks } from "../lib/scan";
 import { INSTITUTIONAL_SLUGS, LIMITS } from "../lib/limits";
 import { authSkip, figmaSkip } from "../lib/gaps";
@@ -36,6 +36,21 @@ function arg(name: string): string | undefined {
 
 function hasFlag(name: string): boolean {
   return process.argv.includes(name);
+}
+
+function loadJourney(): LoadedJourney {
+  const file = arg("--journey");
+  if (!file) return defaultJourney();
+  const abs = path.resolve(file);
+  let raw: unknown;
+  try {
+    raw = JSON.parse(fs.readFileSync(abs, "utf8"));
+  } catch (err) {
+    throw new Error(`jornada: não deu para ler ${abs}: ${err instanceof Error ? err.message : String(err)}`);
+  }
+  const parsed = parseJourneyFile(raw, path.basename(abs));
+  if (!parsed.ok) throw new Error(parsed.message);
+  return parsed.journey;
 }
 
 function serveFixture(): Promise<{ server: http.Server; origin: string }> {
@@ -73,6 +88,7 @@ async function main(): Promise<void> {
   });
 
   assertReportOnly(false);
+  const journey = loadJourney();
 
   const report: Report = {
     store: target.kind === "fixture" ? "fixture-demo-qa" : target.url,
@@ -88,6 +104,13 @@ async function main(): Promise<void> {
     auth: authSkip(),
     pages: [],
     isolation: { hostedFetch: false, methods: "GET", figmaFaked: false, payment: false },
+    journey: {
+      name: journey.name,
+      source: journey.source,
+      startPath: journey.startPath,
+      stepIds: journey.steps.map((s) => s.id),
+      stopBeforePayment: true,
+    },
   };
   const htmls: string[] = [];
   const pages: PageFacts[] = [];
@@ -106,15 +129,21 @@ async function main(): Promise<void> {
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage({ viewport });
   const rawConsole: string[] = [];
+  let documentStatus = 0;
   page.on("pageerror", (e) => rawConsole.push(String(e)));
+  page.on("response", (response) => {
+    if (response.request().isNavigationRequest() && response.frame() === page.mainFrame()) {
+      documentStatus = response.status();
+    }
+  });
   page.on("console", (m) => {
     if (m.type() === "error") rawConsole.push(m.text());
   });
 
   let failed = false;
   try {
-    await page.goto(`${origin}/home.html`, { waitUntil: "domcontentloaded" });
-    for (const step of FIXTURE_JOURNEY) {
+    await page.goto(`${origin}${journey.startPath}`, { waitUntil: "domcontentloaded" });
+    for (const step of journey.steps) {
       if (isPaymentCompletePath(new URL(page.url()).pathname)) {
         throw new Error("política: a Ronda não abre confirmação de pedido");
       }
@@ -125,8 +154,7 @@ async function main(): Promise<void> {
       htmls.push(html);
       const scriban = detectScribanError(html);
       if (!scriban.ok) throw new Error(`Scriban: ${scriban.message}`);
-      const headingName = step.id === "categoria" ? { name: "Tênis", exact: true } : { name: step.heading };
-      await page.getByRole("heading", headingName).waitFor({ state: "visible", timeout: 5000 });
+      await page.getByRole("heading", { name: step.heading, exact: true }).waitFor({ state: "visible", timeout: 5000 });
       if (step.stop) {
         const cardValue = await page.locator('input[name="card"]').inputValue().catch(() => "");
         assertNotPaid({
@@ -138,7 +166,7 @@ async function main(): Promise<void> {
       }
       const shot = path.join(OUT, `${step.id}.png`);
       await page.screenshot({ path: shot, fullPage: false });
-      const facts = auditHtml(page.url(), html);
+      const facts = auditHtml(page.url(), html, documentStatus || 200);
       pages.push(facts);
       const refCandidate =
         refPng && step.id === refStep
@@ -183,7 +211,7 @@ async function main(): Promise<void> {
     failed = true;
     report.error = String(err);
     report.steps.push({
-      id: "checkout",
+      id: journey.steps[report.steps.length]?.id || "falha",
       url: page.url(),
       pass: false,
       stopped_before_payment: false,
@@ -217,7 +245,7 @@ async function main(): Promise<void> {
     }
     const broken = done.links.filter((l) => l.verdict === "broken").length;
     console.log(
-      "RONDA OK 5/5 stopped_before_payment",
+      `RONDA OK ${done.steps.length}/${journey.steps.length} stopped_before_payment`,
       `links=${done.links.length} broken=${broken} max=${LIMITS.maxLinks}`,
       `viewport=${viewport.width}x${viewport.height}`,
       visuals.length ? `visual=${visuals.filter((v) => v.pass).length}/${visuals.length}` : "visual=skip",
