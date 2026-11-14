@@ -106,6 +106,14 @@ export function Viewer() {
             busca URL</strong> (evita SSRF). Preview localhost só com{" "}
             <code>--autorizo-este-ambiente</code>. Não detecta tudo.
           </p>
+          <p>
+            <strong>Já funciona:</strong> jornada fixture 5 etapas até “Forma de pagamento”; institucionais
+            da allowlist; GET same-origin com teto e bloqueio SSRF; console first-party mascarado; laudo
+            JSON/HTML. <strong>Ainda não:</strong> Figma, login, loja de cliente, Nuvemshop, correção do
+            tema, cobrança. Hospedagem: Vercel Hobby — uso pessoal ou não comercial (
+            <a href="https://vercel.com/legal/terms">Termos §4</a>
+            ).
+          </p>
         </section>
 
         <section className="slip" aria-labelledby="colar">

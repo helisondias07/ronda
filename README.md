@@ -56,7 +56,10 @@ npm run ronda -- --base-url http://127.0.0.1:5000 --autorizo-este-ambiente
 
 1. GitHub: este repositório (`main`).
 2. Vercel Hobby, framework Next.js, **sem** domínio pago. Preview por PR. Rollback = Promote do deployment anterior.
-3. Feature implícita: visor **não** liga varredura remota. Não ligar cobrança nem ads até revisão.
+3. Feature implícita: visor **não** liga varredura remota.
+4. Hobby = **pessoal ou não comercial** ([Termos §4](https://vercel.com/legal/terms), 14/11/2026). **Não cobrar** neste deploy. Migração para Pro **só** se houver pagamento — **não contratar agora**.
+
+Não ligar cobrança nem ads até revisão.
 
 ## Preço (hipótese, não oferta)
 
