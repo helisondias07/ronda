@@ -29,6 +29,8 @@ O site publicado só **mostra** um `report.json`. Ele **não busca URL** (isolam
 
 Playground visual: `/playground-estados.html` no site publicado (cópia em `public/`; fonte em `docs/`).
 
+Evolução (não implementada): `docs/plano-evolucao-qa.md` — Figma via `visual-review`, isolamento CLI×visor, acesso só com autorização. Sem loja de cliente neste Hobby.
+
 ## Rodar
 
 ```bash
