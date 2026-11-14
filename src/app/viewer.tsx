@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { isPassing } from "@/lib/report";
-import { describeScreenshot, parseReport } from "@/lib/viewer-parse";
+import { describeScreenshot, parseReport, stepLabel } from "@/lib/viewer-parse";
 import type { Report } from "@/lib/types";
 
 const EXAMPLE = {
@@ -177,22 +177,23 @@ export function Viewer() {
             </p>
             <ol className="steps">
               {report.steps.map((step, i) => (
-                <li key={`${step.id}-${step.url}`}>
+                <li key={`${step.id}-${step.url}-${i}`}>
                   <span className="n" aria-hidden="true">
                     {String(i + 1).padStart(2, "0")}
                   </span>
                   <div>
-                    <strong>{step.id}</strong> {step.pass ? "ok" : "falhou"}
+                    <strong>{stepLabel(step)}</strong> {step.pass ? "ok" : "falhou"}
                     {step.stopped_before_payment ? (
                       <span className="parar"> — parado antes do pagamento</span>
                     ) : null}
+                    {step.formatWarning ? <p className="bad">{step.formatWarning}</p> : null}
                     <div className="shot">
                       {(() => {
                         const shot = describeScreenshot(step.screenshot);
                         if (shot.src) {
                           return (
                             // eslint-disable-next-line @next/next/no-img-element
-                            <img className="shot-img" src={shot.src} alt={`Print da etapa ${step.id} (embutido no JSON)`} />
+                            <img className="shot-img" src={shot.src} alt={`Print da etapa ${stepLabel(step)} (embutido no JSON)`} />
                           );
                         }
                         return shot.label;
@@ -203,6 +204,8 @@ export function Viewer() {
                         <>
                           {step.suggestion.hypothesis} <em>apply: false</em>
                         </>
+                      ) : step.formatWarning ? (
+                        "Não inventamos o nome da etapa a partir de um formato não reconhecido."
                       ) : (
                         "Sem hipótese neste passo (etapa passou ou o JSON não trouxe suggestion)."
                       )}

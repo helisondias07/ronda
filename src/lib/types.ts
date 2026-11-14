@@ -1,17 +1,19 @@
 export type StepId = "home" | "categoria" | "produto" | "carrinho" | "checkout";
 
 export type StepResult = {
-  id: StepId;
+  id: StepId | string;
   url: string;
   pass: boolean;
   screenshot?: string;
   stopped_before_payment: boolean;
   error?: string;
   suggestion?: Suggestion;
+  /** Aviso quando o JSON não trouxe um id de etapa conhecido. */
+  formatWarning?: string;
 };
 
 export type Suggestion = {
-  step: StepId;
+  step: StepId | string;
   hypothesis: string;
   apply: false;
 };

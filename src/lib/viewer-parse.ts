@@ -1,6 +1,14 @@
 import { finalizeReport } from "./report";
 import type { Report, StepId, StepResult } from "./types";
 
+export const KNOWN_STEP_IDS: StepId[] = ["home", "categoria", "produto", "carrinho", "checkout"];
+const UNLABELED_STEP_ID = "etapa-nao-identificada";
+
+export function stepLabel(step: Pick<StepResult, "id" | "formatWarning">): string {
+  if (!step.id || step.id === UNLABELED_STEP_ID) return "etapa não identificada";
+  return step.id;
+}
+
 function stringifyUnknown(value: unknown): string {
   if (typeof value === "string") return value;
   if (typeof value === "number" || typeof value === "boolean") return String(value);
@@ -54,7 +62,18 @@ export function normalizeConsoleErrors(value: unknown): string[] {
 function asStep(raw: unknown): StepResult {
   const rec = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
   const pasted = formatSuggestion(rec.suggestion);
-  const id = (typeof rec.id === "string" ? rec.id : "home") as StepId;
+  const rawId = typeof rec.id === "string" ? rec.id.trim() : "";
+  let id: string;
+  let formatWarning: string | undefined;
+  if (!rawId) {
+    id = UNLABELED_STEP_ID;
+    formatWarning = "formato não reconhecido: etapa sem id";
+  } else if (!KNOWN_STEP_IDS.includes(rawId as StepId)) {
+    id = rawId;
+    formatWarning = `formato não reconhecido: id "${rawId}" não é etapa da jornada`;
+  } else {
+    id = rawId;
+  }
   return {
     id,
     url: typeof rec.url === "string" ? rec.url : "",
@@ -63,6 +82,7 @@ function asStep(raw: unknown): StepResult {
     stopped_before_payment: Boolean(rec.stopped_before_payment),
     error: typeof rec.error === "string" ? rec.error : rec.error != null ? stringifyUnknown(rec.error) : undefined,
     suggestion: pasted ? { step: id, hypothesis: pasted, apply: false } : undefined,
+    formatWarning,
   };
 }
 
@@ -103,8 +123,13 @@ export function parseReport(raw: string): { ok: true; report: Report } | { ok: f
           ? (rawSteps[i] as { suggestion?: unknown }).suggestion
           : undefined,
       );
-      if (!pasted) return step;
-      return { ...step, suggestion: { step: step.id, hypothesis: pasted, apply: false as const } };
+      if (pasted) {
+        return { ...step, suggestion: { step: step.id, hypothesis: pasted, apply: false as const } };
+      }
+      if (step.formatWarning) {
+        return { ...step, suggestion: undefined };
+      }
+      return step;
     });
     return {
       ok: true,

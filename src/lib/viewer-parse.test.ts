@@ -7,6 +7,7 @@ import {
   formatSuggestion,
   normalizeConsoleErrors,
   parseReport,
+  stepLabel,
 } from "./viewer-parse";
 
 describe("parseReport", () => {
@@ -87,6 +88,31 @@ describe("parseReport", () => {
     expect(parsed.report.consoleErrors[0]).toBe("Uncaught TypeError: addToCart is not a function");
     expect(parsed.report.consoleErrors[1]).toMatch(/"code":12/);
     expect(parsed.report.consoleErrors.join("\n")).not.toMatch(/\[object Object\]/);
+  });
+
+  it("não apresenta etapa sem id como home; preserva o restante do JSON", () => {
+    const parsed = parseReport(
+      JSON.stringify({
+        steps: [
+          { url: "http://127.0.0.1/x.html", pass: false },
+          {
+            id: "produto",
+            url: "http://127.0.0.1/produto.html",
+            pass: false,
+            stopped_before_payment: false,
+            error: '{"status_code":500,"message":"The function `currency` was not found"}',
+          },
+        ],
+      }),
+    );
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+    expect(parsed.report.steps).toHaveLength(2);
+    expect(stepLabel(parsed.report.steps[0])).toBe("etapa não identificada");
+    expect(parsed.report.steps[0].id).not.toBe("home");
+    expect(parsed.report.steps[0].formatWarning).toMatch(/sem id/);
+    expect(parsed.report.steps[1].id).toBe("produto");
+    expect(parsed.report.steps[1].suggestion?.hypothesis).toMatch(/Scriban/);
   });
 });
 
