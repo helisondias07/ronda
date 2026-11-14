@@ -15,6 +15,8 @@ Acesso 14/11/2026. **Não é oferta e não está implementado.** O visor publica
 
 O CLI foi executado contra o fixture. Testes com Playwright verificam que controles perigosos configurados são recusados sem disparar handlers; não houve interceptação de rede real nem simulação de DNS rebinding. `--base-url` permanece desativado; não afirmamos isolamento de rede geral.
 
+Proposta de sandbox futuro e portão adversarial detalhado: `docs/arquitetura-sandbox-futuro.md`. Nada dessa proposta habilita URL externa.
+
 ## Figma (fase posterior, sem fingir)
 
 - Reusar `visual-review` do Oasis; **não** segundo motor de pixel.
