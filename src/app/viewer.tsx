@@ -121,7 +121,8 @@ export function Viewer() {
           <p>
             <strong>Já funciona:</strong> jornada demo configurável (JSON local, teto 8 etapas, obrigatório
             parar antes de pagar); institucionais da allowlist; GET same-origin com teto e bloqueio SSRF;
-            console first-party mascarado; laudo JSON/HTML. <strong>Ainda não:</strong> Figma, login, loja
+            console first-party mascarado; título/h1 e sinais HTML básicos de acessibilidade (heurística parcial,
+            não é auditoria WCAG); laudo JSON/HTML. <strong>Ainda não:</strong> Figma, login, loja
             de cliente, Nuvemshop, correção do tema, cobrança. Hospedagem: Vercel Hobby — uso pessoal ou não comercial (
             <a href="https://vercel.com/legal/terms">Termos §4</a>
             ).
