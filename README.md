@@ -60,7 +60,7 @@ npm run ronda -- --base-url http://127.0.0.1:5000 --autorizo-este-ambiente
 
 ## Preço (hipótese, não oferta)
 
-Custo variável do MVP local: US$ 0 (Playwright OSS). Checkly Starter / Tracefox pago não cabem no teto de R$ 200 juntos. **Hipótese** se um dia houver plano: laudo por ambiente autorizado, sem “consertamos seu site”. Sem WTP medido.
+Custo variável do MVP local: US$ 0 (Playwright OSS). Checkly Starter / Tracefox pago não cabem no teto de R$ 200 juntos. **Hipótese a testar** (não oferta): avulso R$ 99 pelo relatório **sem** patch; ads R$ 0 até 2 pagamentos. Marca/domínio não conferidos. Sem WTP medido.
 
 ## Lacunas
 

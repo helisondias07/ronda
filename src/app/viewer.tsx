@@ -55,9 +55,9 @@ export function Viewer() {
 
   const status = useMemo(() => {
     if (!report) return null;
-    if (isPassing(report)) return { className: "pill ok", label: "passou · stopped_before_payment" };
+    if (isPassing(report)) return { className: "pill ok", label: "passou · parado antes de pagar" };
     if (report.steps.some((s) => s.stopped_before_payment)) {
-      return { className: "pill stop", label: "parado antes do pagamento" };
+      return { className: "pill parar", label: "parado antes do pagamento" };
     }
     return { className: "pill bad", label: "falhou ou incompleto" };
   }, [report]);
@@ -77,14 +77,17 @@ export function Viewer() {
 
   return (
     <>
-      <header className="tape">
+      <a className="skip" href="#conteudo">
+        Ir para o conteúdo
+      </a>
+      <header className="capa">
         <h1>Ronda</h1>
         <p>
-          Laudo da jornada de compra. Esta página <strong>não testa loja</strong> e não tem acesso à sua
-          vitrine. A ronda roda no seu PC; aqui você só lê o JSON.
+          Laudo da loja, com prova. A gente não mexe no site. Esta página <strong>não testa loja</strong> —
+          só lê o JSON gerado no seu PC. Nome de marca provisório; não é registro.
         </p>
       </header>
-      <main>
+      <main id="conteudo">
         <section className="slip" aria-labelledby="como">
           <h2 id="como">Como funciona de verdade</h2>
           <ol>
@@ -157,24 +160,31 @@ export function Viewer() {
               Alvo: {report.target} · plataforma: {report.platform}
             </p>
             <ol className="steps">
-              {report.steps.map((step) => (
+              {report.steps.map((step, i) => (
                 <li key={`${step.id}-${step.url}`}>
-                  <strong>{step.id}</strong> {step.pass ? "ok" : "falhou"}
-                  {step.stopped_before_payment ? " — parado antes do pagamento" : ""}
-                  <div className="shot">{step.screenshot || "sem print"}</div>
-                  {step.suggestion ? (
-                    <p className="hyp">
-                      {step.suggestion.hypothesis} <em>apply: false</em>
-                    </p>
-                  ) : null}
-                  {step.error ? <p className="bad">{step.error}</p> : null}
+                  <span className="n" aria-hidden="true">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <div>
+                    <strong>{step.id}</strong> {step.pass ? "ok" : "falhou"}
+                    {step.stopped_before_payment ? (
+                      <span className="parar"> — parado antes do pagamento</span>
+                    ) : null}
+                    <div className="shot">{step.screenshot || "print faltando"}</div>
+                    {step.suggestion ? (
+                      <p className="hyp">
+                        {step.suggestion.hypothesis} <em>apply: false</em>
+                      </p>
+                    ) : null}
+                    {step.error ? <p className="bad">{step.error}</p> : null}
+                  </div>
                 </li>
               ))}
             </ol>
             {report.institutional?.length ? (
               <>
                 <h2>Institucionais</h2>
-                <ol className="steps">
+                <ol className="plain">
                   {report.institutional.map((page) => (
                     <li key={page.slug}>
                       {page.slug} {page.pass ? "ok" : "falhou"} {page.status ? `(${page.status})` : ""}
@@ -186,7 +196,7 @@ export function Viewer() {
             {report.links?.length ? (
               <>
                 <h2>Links (GET, same-origin)</h2>
-                <ol className="steps">
+                <ol className="plain">
                   {report.links.map((link) => (
                     <li key={`${link.verdict}-${link.href}`}>
                       {link.href} — {link.verdict}

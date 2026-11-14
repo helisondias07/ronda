@@ -1,7 +1,7 @@
 export default function PrivacidadePage() {
   return (
     <>
-      <header className="tape">
+      <header className="capa">
         <h1>Privacidade (LGPD)</h1>
         <p>A Ronda processa URL e laudo que você gera. Não criamos conta e não entramos em loja de cliente da nuvem.</p>
       </header>

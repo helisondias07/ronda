@@ -76,6 +76,7 @@ describe("report", () => {
       steps: [step({ id: "checkout", screenshot: "out/checkout.png" })],
     });
     expect(html).toMatch(/parado antes do pagamento/);
+    expect(html).toMatch(/não altera a loja/);
     expect(html).not.toMatch(/pedido concluído/);
   });
 });

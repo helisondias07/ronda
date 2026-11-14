@@ -1,12 +1,17 @@
 # DESIGN.md — Ronda
 
+Direção do Diretor (14/11/2026): laudo de vistoria. Rótulo provisório **Laudo** — marca e domínio **não conferidos**. O slug publicado continua `ronda`. Sem serif (a serif ficou no produto de candidatos).
+
 ## Intenção
-Operar (ler um laudo de jornada), não vender “QA mágico”. Público: quem cuida de Storefront Wake, várias idades. PT-BR didático.
+Documento de prova, sem conserto. Frase de 3 s: “Laudo da loja, com prova. A gente não mexe no site.”
 
 ## Tokens
-- Kraft `#e9dcc6`, talão `#f7f1e3`, fita de embalagem `#2f3d28`, tinta `#1c1914`.
-- Ok `#2d4a32`, falha `#8b1e1e`, parada `#8a5a12`.
-- Corpo Georgia 18px / 1.55; números em mono do sistema. Sem gradiente, sem roxo, sem chip pulsando.
+- `--concreto` `#E6E1D6`, `--folha` `#F7F4EC`, `--carvao` `#1C1C1A`, `--suave` `#5A564E`, `--linha` `#C9C2B3`
+- `--sinal` `#B8860B` (faixa “em vistoria”, texto carvão em cima)
+- `--ok` `#1F5C45`, `--falha` `#8B1E1E`, `--parar` `#1F4E79` (checkout parado ≠ falha)
+- Tipo: IBM Plex Sans + Plex Mono (OFL, auto-hospedadas). Sem Georgia, sem uppercase tracking nos H2.
 
-## Motivo
-A Ronda é um talão de inspeção no recebimento: fita verde-oliva, papel kraft, etapas numeradas. Não é dashboard SaaS nem o mesmo “mesa de papel” da Prancheta.
+## Acessibilidade
+Skip link, alvo 44px, foco 2px carvão, prints com texto, `@media print` fundo branco, `prefers-reduced-motion`.
+
+Fonte: `Shared/AgentOps/DESIGN-laudo.md`.

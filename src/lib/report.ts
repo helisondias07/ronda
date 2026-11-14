@@ -42,37 +42,41 @@ export function isPassing(report: Report): boolean {
 export function renderHtml(report: Report): string {
   const ok = isPassing(report);
   const rows = report.steps
-    .map((s) => {
+    .map((s, i) => {
       const mark = s.pass ? "ok" : "falhou";
-      const shot = s.screenshot ? s.screenshot : "sem print";
+      const shot = s.screenshot ? s.screenshot : "print faltando";
       const stop = s.stopped_before_payment ? " — parado antes do pagamento" : "";
       const hyp = s.suggestion ? `<p class="hyp">${escapeHtml(s.suggestion.hypothesis)} <em>apply: false</em></p>` : "";
-      return `<li><strong>${s.id}</strong> ${mark}${stop}<div class="shot">${escapeHtml(shot)}</div>${hyp}</li>`;
+      const n = String(i + 1).padStart(2, "0");
+      return `<li><span class="n">${n}</span><div><strong>${s.id}</strong> ${mark}${stop}<div class="shot">${escapeHtml(shot)}</div>${hyp}</div></li>`;
     })
     .join("");
   return `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<title>Laudo Ronda — ${escapeHtml(report.store)}</title>
+<title>Laudo — ${escapeHtml(report.store)}</title>
 <style>
-body{margin:0;font:18px/1.5 Georgia,serif;background:#e9dcc6;color:#1c1914}
-header{background:#2f3d28;color:#f4efe4;padding:1.2rem}
-main{max-width:40rem;margin:auto;padding:1.2rem;background:#f7f1e3}
-.pill{display:inline-block;border:1px solid currentColor;padding:.15rem .4rem;font:700 .75rem/1 sans-serif}
-.ok{color:#2d4a32}.bad{color:#8b1e1e}
-.shot{margin:.35rem 0;padding:.5rem;border:1px dashed #d9ccb4;font:14px/1.4 ui-monospace,Consolas,monospace}
-.hyp{font-size:.92rem;color:#5c564c}
+body{margin:0;font:18px/1.5 "IBM Plex Sans",system-ui,sans-serif;background:#e6e1d6;color:#1c1c1a}
+header{background:#1c1c1a;color:#f7f4ec;padding:1.2rem}
+main{max-width:40rem;margin:auto;padding:1.2rem;background:#f7f4ec}
+.pill{display:inline-block;border:1px solid currentColor;padding:.15rem .4rem}
+.ok{color:#1f5c45}.bad{color:#8b1e1e}.parar{color:#1f4e79}
+.n{font:500 1.3rem/1 "IBM Plex Mono",ui-monospace,monospace;margin-right:.4rem}
+ol{padding:0;list-style:none} li{display:grid;grid-template-columns:2.5rem 1fr;margin:.6rem 0}
+.shot{margin:.35rem 0;padding:.5rem;border:1px dashed #c9c2b3;font:14px/1.4 "IBM Plex Mono",ui-monospace,monospace}
+.hyp{font-size:.92rem;color:#5a564e}
+@media print{body,header,main{background:#fff;color:#000}}
 </style>
 </head>
 <body>
 <header>
-<h1>Ronda — laudo de jornada</h1>
-<p>${escapeHtml(report.store)} · ${escapeHtml(report.platform)} · ${escapeHtml(report.target)}</p>
-<p class="pill ${ok ? "ok" : "bad"}">${ok ? "passou · stopped_before_payment" : "falhou ou incompleto"}</p>
+<h1>Laudo · ${escapeHtml(report.store)}</h1>
+<p>${escapeHtml(report.platform)} · ${escapeHtml(report.target)}</p>
+<p class="pill ${ok ? "ok" : "bad"}">${ok ? "passou · parado antes de pagar" : "falhou ou incompleto"}</p>
 </header>
 <main>
-<p>Só relata. Não pagou. Não alterou tema. Não garante que detecta tudo.</p>
+<p>Este laudo não altera a loja. Não pagou. Não garante que detecta tudo.</p>
 <ol>${rows}</ol>
 <p>Links: ${(report.links || []).length} · institucionais: ${(report.institutional || []).length}</p>
 <p>Figma: ${escapeHtml((report.figma && report.figma.reason) || "indisponível")}</p>

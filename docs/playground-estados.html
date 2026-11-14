@@ -6,32 +6,32 @@
   <title>Playground — Ronda (estados do laudo)</title>
   <style>
     :root {
-      --kraft: #e9dcc6;
-      --slip: #f7f1e3;
-      --tape: #2f3d28;
-      --ink: #1c1914;
-      --muted: #5c564c;
-      --ok: #2d4a32;
+      --concreto: #e6e1d6;
+      --folha: #f7f4ec;
+      --carvao: #1c1c1a;
+      --muted: #5a564e;
+      --ok: #1f5c45;
       --bad: #8b1e1e;
-      --stop: #8a5a12;
-      --line: #d9ccb4;
+      --parar: #1f4e79;
+      --sinal: #b8860b;
+      --line: #c9c2b3;
     }
     * { box-sizing: border-box; }
-    body { margin: 0; font: 17px/1.5 Georgia, "Times New Roman", serif; color: var(--ink); background: var(--kraft); }
-    header { background: var(--tape); color: #f4efe4; padding: 1.4rem 1.2rem; }
-    header h1 { margin: 0 0 .35rem; font-size: 1.45rem; font-weight: 400; }
-    header p { margin: 0; font-size: .92rem; color: #d7decc; max-width: 42rem; }
+    body { margin: 0; font: 17px/1.5 system-ui, sans-serif; color: var(--carvao); background: var(--concreto); }
+    header { background: var(--carvao); color: var(--folha); padding: 1.4rem 1.2rem; }
+    header h1 { margin: 0 0 .35rem; font-size: 1.45rem; font-weight: 600; }
+    header p { margin: 0; font-size: .92rem; color: #d9d4c8; max-width: 42rem; }
     main { display: grid; gap: 1rem; padding: 1.1rem; max-width: 1100px; margin: auto; }
     @media (min-width: 900px) { main { grid-template-columns: 1fr 1fr; } }
-    article { background: var(--slip); border: 1px solid var(--line); padding: 1rem 1.05rem; }
-    article h2 { margin: 0 0 .65rem; font: 700 .72rem/1 ui-sans-serif, system-ui, sans-serif; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
-    .bar { display: flex; justify-content: space-between; gap: .5rem; align-items: baseline; font-family: ui-sans-serif, system-ui, sans-serif; }
+    article { background: var(--folha); border: 1px solid var(--line); padding: 1rem 1.05rem; }
+    article h2 { margin: 0 0 .65rem; font-size: 1rem; font-weight: 500; color: var(--muted); }
+    .bar { display: flex; justify-content: space-between; gap: .5rem; align-items: baseline; }
     .n { font-family: ui-monospace, Consolas, monospace; font-size: .85rem; }
-    .pill { font: 700 .68rem/1 ui-sans-serif, system-ui, sans-serif; letter-spacing: .06em; text-transform: uppercase; padding: .2rem .45rem; border: 1px solid currentColor; }
+    .pill { font-size: .8rem; font-weight: 500; padding: .2rem .45rem; border: 1px solid currentColor; }
     .ok { color: var(--ok); }
     .bad { color: var(--bad); }
-    .wait { color: var(--stop); }
-    .stop { color: var(--stop); }
+    .wait { color: var(--carvao); background: var(--sinal); }
+    .stop { color: var(--parar); }
     ol { margin: .5rem 0 0; padding-left: 1.15rem; }
     .shot { margin-top: .55rem; min-height: 64px; border: 1px dashed var(--line); background: #efe8d6; color: var(--muted); display: flex; align-items: center; justify-content: center; font-size: .85rem; }
     .err { font: .75rem/1.4 ui-monospace, Consolas, monospace; background: #f4e4e0; color: var(--bad); padding: .55rem; max-height: 7rem; overflow: auto; white-space: pre-wrap; }
