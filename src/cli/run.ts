@@ -18,7 +18,8 @@ import { INSTITUTIONAL_SLUGS, LIMITS } from "../lib/limits";
 import { authSkip, figmaSkip } from "../lib/gaps";
 import { describeShotFile } from "../lib/evidence";
 import { auditHtml } from "../lib/page-audit";
-import type { PageFacts, Report, StepResult } from "../lib/types";
+import { comparePngFiles, parseViewport } from "../lib/visual-png";
+import type { PageFacts, Report, StepResult, VisualCompare } from "../lib/types";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const FIXTURE = path.join(root, "fixture");
@@ -90,7 +91,12 @@ async function main(): Promise<void> {
   };
   const htmls: string[] = [];
   const pages: PageFacts[] = [];
+  const visuals: VisualCompare[] = [];
   const allowLocal = true;
+  const viewport = parseViewport(arg("--viewport"));
+  const refPng = arg("--ref-png");
+  const refStep = arg("--ref-step") || "home";
+  const refDir = arg("--ref-dir");
 
   const hosted = target.kind === "fixture" ? await serveFixture() : null;
   const origin = target.kind === "fixture" ? hosted!.origin : target.url;
@@ -98,7 +104,7 @@ async function main(): Promise<void> {
   fs.mkdirSync(OUT, { recursive: true });
 
   const browser = await chromium.launch({ headless: true });
-  const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
+  const page = await browser.newPage({ viewport });
   const rawConsole: string[] = [];
   page.on("pageerror", (e) => rawConsole.push(String(e)));
   page.on("console", (m) => {
@@ -131,9 +137,38 @@ async function main(): Promise<void> {
         report.stopped_before_payment = true;
       }
       const shot = path.join(OUT, `${step.id}.png`);
-      await page.screenshot({ path: shot, fullPage: true });
+      await page.screenshot({ path: shot, fullPage: false });
       const facts = auditHtml(page.url(), html);
       pages.push(facts);
+      const refCandidate =
+        refPng && step.id === refStep
+          ? refPng
+          : refDir
+            ? path.join(refDir, `${step.id}.png`)
+            : undefined;
+      if (refCandidate && fs.existsSync(refCandidate)) {
+        visuals.push(
+          comparePngFiles({
+            step: step.id,
+            actualPath: shot,
+            referencePath: refCandidate,
+            viewport,
+            diffPath: path.join(OUT, `diff-${step.id}.png`),
+          }),
+        );
+      } else if (refPng && step.id === refStep) {
+        visuals.push({
+          source: "user-png",
+          figma: false,
+          step: step.id,
+          viewport,
+          reference: { path: refPng, width: 0, height: 0 },
+          actual: { path: shot, width: 0, height: 0 },
+          pass: false,
+          apply: false,
+          hypothesis: `PNG de referência não encontrado: ${refPng}. Não usamos Figma no lugar.`,
+        });
+      }
       const entry: StepResult = {
         id: step.id,
         url: page.url(),
@@ -168,6 +203,7 @@ async function main(): Promise<void> {
     report.figma = figmaSkip();
     report.auth = authSkip();
     report.pages = pages;
+    report.visual = visuals;
     report.isolation = { hostedFetch: false, methods: "GET", figmaFaked: false, payment: false };
     report.detects_everything = false;
     const done = finalizeReport(report);
@@ -183,6 +219,8 @@ async function main(): Promise<void> {
     console.log(
       "RONDA OK 5/5 stopped_before_payment",
       `links=${done.links.length} broken=${broken} max=${LIMITS.maxLinks}`,
+      `viewport=${viewport.width}x${viewport.height}`,
+      visuals.length ? `visual=${visuals.filter((v) => v.pass).length}/${visuals.length}` : "visual=skip",
       OUT,
     );
   }

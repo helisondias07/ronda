@@ -90,6 +90,22 @@ export type Report = {
   auth: Skip;
   pages?: PageFacts[];
   isolation?: IsolationNote;
+  visual?: VisualCompare[];
+};
+
+export type VisualCompare = {
+  source: "user-png";
+  figma: false;
+  step: string;
+  viewport: { width: number; height: number };
+  reference: { path: string; width: number; height: number };
+  actual: { path: string; width: number; height: number };
+  mismatchRatio?: number;
+  diffPixels?: number;
+  diffPath?: string;
+  pass: boolean;
+  hypothesis: string;
+  apply: false;
 };
 
 export type Target =

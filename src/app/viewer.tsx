@@ -271,6 +271,24 @@ export function Viewer() {
             ) : (
               <p className="muted">Nenhum erro first-party neste JSON.</p>
             )}
+            {report.visual?.length ? (
+              <>
+                <h2>PNG de referência (local)</h2>
+                <ol className="plain">
+                  {report.visual.map((v) => (
+                    <li key={`${v.step}-${v.reference.path}`}>
+                      {v.step} · viewport {v.viewport.width}×{v.viewport.height} · captura {v.actual.width}×
+                      {v.actual.height} · ref {v.reference.width}×{v.reference.height} —{" "}
+                      {v.pass ? "ok" : "diferiu"}
+                      {v.mismatchRatio != null ? ` (${(v.mismatchRatio * 100).toFixed(2)}%)` : ""}
+                      <p className="hyp">
+                        {v.hypothesis} <em>figma: false · apply: false</em>
+                      </p>
+                    </li>
+                  ))}
+                </ol>
+              </>
+            ) : null}
             <p className="hyp">Figma: {report.figma?.reason}</p>
             <p className="hyp">Login: {report.auth?.reason}</p>
             <p className="muted">

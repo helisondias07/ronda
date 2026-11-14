@@ -15,6 +15,7 @@ Acesso 14/11/2026. **Não é oferta e não está implementado.** O visor publica
 - Reusar `visual-review` do Oasis; **não** segundo motor de pixel.
 - Entrada: PNG/PDF que o cliente exporta **ou** `FIGMA_TOKEN` + file/node no cofre.
 - Sem token/spec: o laudo continua com `figma.available: false` e o motivo. Não desenhar diff falso.
+- Comparação visual **implementada** só contra PNG que o usuário coloca no disco (`--ref-png`). Viewport e dimensões explícitas; sem reescalar.
 - AUP Figma: não scrapar arquivo alheio; viewer token só com autorização.
 
 ## Acesso autorizado (só o usuário desbloqueia)

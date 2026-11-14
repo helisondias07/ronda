@@ -35,6 +35,7 @@ export function finalizeReport(report: Report): Report {
       figmaFaked: false,
       payment: false,
     },
+    visual: report.visual || [],
   };
 }
 

@@ -9,6 +9,7 @@ O site publicado só **mostra** um `report.json`. Ele **não busca URL** (isolam
 | Função | Como |
 |---|---|
 | Fixture Demo QA | `npm run ronda` — 5 etapas, `stopped_before_payment`, print+sha256, h1/título |
+| PNG de referência | `--ref-png` + `--ref-step` + `--viewport 1280x720` no PC; diff local. **Não é Figma.** |
 | Institucionais | allowlist `sobre.html`, `politica.html` |
 | Links / botões com href | GET same-origin, teto 80, timeout 8s; mailto/externo/script ignorados |
 | Console | só `pageerror` / `console.error` first-party |
@@ -46,7 +47,10 @@ Preview local autorizado (não é produção de cliente):
 
 ```bash
 npm run ronda -- --base-url http://127.0.0.1:5000 --autorizo-este-ambiente
+npm run ronda -- --viewport 1280x720 --ref-png caminho/home.png --ref-step home
 ```
+
+O visor Hobby **não** recebe o PNG. Diff fica em `ronda-out/diff-*.png`.
 
 ## Isolamento do scanner
 

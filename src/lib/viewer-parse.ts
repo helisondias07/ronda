@@ -121,6 +121,7 @@ export function parseReport(raw: string): { ok: true; report: Report } | { ok: f
           "sem conta de teste no Vault. A Ronda não cria cadastro, não preenche senha e não automatiza CAPTCHA/SMS/social.",
       },
       pages: Array.isArray(data.pages) ? (data.pages as Report["pages"]) : [],
+      visual: Array.isArray(data.visual) ? (data.visual as Report["visual"]) : [],
       isolation: {
         hostedFetch: false,
         methods: "GET",
