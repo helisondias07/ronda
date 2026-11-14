@@ -1,0 +1,116 @@
+:root {
+  --kraft: #e9dcc6;
+  --slip: #f7f1e3;
+  --tape: #2f3d28;
+  --ink: #1c1914;
+  --muted: #5c564c;
+  --ok: #2d4a32;
+  --bad: #8b1e1e;
+  --stop: #8a5a12;
+  --line: #d9ccb4;
+  --focus: #1d4ed8;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--kraft);
+  color: var(--ink);
+  font: 18px/1.55 Georgia, "Times New Roman", serif;
+}
+
+a { color: var(--tape); }
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.tape {
+  background: var(--tape);
+  color: #f4efe4;
+  padding: 1.35rem 1.2rem 1.2rem;
+}
+
+.tape p { margin: 0.35rem 0 0; color: #d7decc; max-width: 40rem; }
+
+h1, h2 { font-weight: 400; }
+
+main {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: 1.2rem;
+}
+
+.slip {
+  background: var(--slip);
+  border: 1px solid var(--line);
+  padding: 1rem 1.1rem;
+  margin: 0 0 1rem;
+}
+
+.muted { color: var(--muted); font-size: 0.95rem; }
+
+label { display: block; margin: 0.4rem 0 0.25rem; font-family: ui-sans-serif, system-ui, sans-serif; font-size: 0.9rem; }
+
+textarea, input[type="file"] {
+  width: 100%;
+  font: 0.9rem/1.4 ui-monospace, Consolas, monospace;
+  background: #fffdf6;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  padding: 0.55rem;
+}
+
+textarea { min-height: 9rem; }
+
+button {
+  font: 1rem/1.3 Georgia, "Times New Roman", serif;
+  background: var(--tape);
+  color: #f4efe4;
+  border: 0;
+  padding: 0.5rem 0.9rem;
+  margin-top: 0.6rem;
+  cursor: pointer;
+}
+
+button.secondary {
+  background: transparent;
+  color: var(--tape);
+  border: 1px solid var(--tape);
+  margin-left: 0.4rem;
+}
+
+.pill {
+  display: inline-block;
+  font: 700 0.72rem/1 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: 1px solid currentColor;
+  padding: 0.2rem 0.45rem;
+}
+
+.ok { color: var(--ok); }
+.bad { color: var(--bad); }
+.stop { color: var(--stop); }
+
+ol.steps { padding-left: 1.2rem; }
+ol.steps li { margin: 0.35rem 0; }
+
+.shot {
+  margin-top: 0.3rem;
+  padding: 0.45rem;
+  border: 1px dashed var(--line);
+  font: 0.82rem/1.4 ui-monospace, Consolas, monospace;
+  color: var(--muted);
+}
+
+.hyp { color: var(--muted); font-size: 0.95rem; }
+
+footer { padding: 1rem 1.2rem 2rem; max-width: 42rem; margin: auto; color: var(--muted); font-size: 0.92rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}

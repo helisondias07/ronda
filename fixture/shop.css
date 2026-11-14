@@ -1,0 +1,7 @@
+body { font: 18px/1.4 Georgia, serif; margin: 0; color: #1c1917; background: #fafaf9; }
+header, main { max-width: 40rem; margin: auto; padding: 1.25rem; }
+a { color: #1d4ed8; }
+button, .cta { font: inherit; background: #1c1917; color: #fff; border: 0; padding: .5rem 1rem; }
+.card { border: 1px solid #e7e5e4; padding: 1rem; background: #fff; }
+#payment-step { border: 1px dashed #a8a29e; padding: 1rem; margin-top: 1rem; }
+input[name="card"] { display: none; }
