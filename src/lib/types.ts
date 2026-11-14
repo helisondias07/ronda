@@ -51,6 +51,8 @@ export type Report = {
   steps: StepResult[];
   stopped_before_payment: boolean;
   consoleErrors: string[];
+  /** Texto de `suggestion.text` (ou equivalente) no topo do JSON colado. */
+  suggestionText?: string;
   error?: string;
   detects_everything: false;
   links: LinkCheck[];

@@ -1,7 +1,13 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { describeScreenshot, parseReport } from "./viewer-parse";
+import {
+  describeScreenshot,
+  formatConsoleEntry,
+  formatSuggestion,
+  normalizeConsoleErrors,
+  parseReport,
+} from "./viewer-parse";
 
 describe("parseReport", () => {
   it("accepts incomplete JSON and fills suggestion plus console", () => {
@@ -33,6 +39,71 @@ describe("parseReport", () => {
     expect(parsed.ok).toBe(false);
     if (parsed.ok) return;
     expect(parsed.message).toMatch(/etapas/);
+  });
+
+  it("mostra suggestion.text no topo e não esconde objeto desconhecido", () => {
+    const parsed = parseReport(
+      JSON.stringify({
+        suggestion: { text: "Hipótese no topo: currency ausente no tema." },
+        steps: [
+          {
+            id: "produto",
+            url: "http://127.0.0.1/produto.html",
+            pass: false,
+            stopped_before_payment: false,
+            suggestion: { text: "texto da etapa produto" },
+          },
+        ],
+      }),
+    );
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+    expect(parsed.report.suggestionText).toBe("Hipótese no topo: currency ausente no tema.");
+    expect(parsed.report.steps[0].suggestion?.hypothesis).toBe("texto da etapa produto");
+    const unknown = parseReport(
+      JSON.stringify({
+        suggestion: { foo: 1, extra: "keep" },
+        steps: [{ id: "home", pass: true, stopped_before_payment: false }],
+      }),
+    );
+    expect(unknown.ok).toBe(true);
+    if (!unknown.ok) return;
+    expect(unknown.report.suggestionText).toMatch(/"foo":1/);
+    expect(unknown.report.suggestionText).not.toMatch(/\[object Object\]/);
+  });
+
+  it("aceita consoleErrors [{message}] e serializa formato não reconhecido", () => {
+    const parsed = parseReport(
+      JSON.stringify({
+        steps: [{ id: "home", pass: true, stopped_before_payment: false }],
+        consoleErrors: [
+          { message: "Uncaught TypeError: addToCart is not a function" },
+          { code: 12, extra: true },
+        ],
+      }),
+    );
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+    expect(parsed.report.consoleErrors[0]).toBe("Uncaught TypeError: addToCart is not a function");
+    expect(parsed.report.consoleErrors[1]).toMatch(/"code":12/);
+    expect(parsed.report.consoleErrors.join("\n")).not.toMatch(/\[object Object\]/);
+  });
+});
+
+describe("formatos de suggestion e console", () => {
+  it("lê text, hypothesis, string e JSON residual", () => {
+    expect(formatSuggestion({ text: "no topo" })).toBe("no topo");
+    expect(formatSuggestion({ hypothesis: "hipótese" })).toBe("hipótese");
+    expect(formatSuggestion("solto")).toBe("solto");
+    expect(formatSuggestion({ unknown: true })).toBe('{"unknown":true}');
+  });
+
+  it("normaliza string, {message} e valor solto", () => {
+    expect(formatConsoleEntry({ message: "boom" })).toBe("boom");
+    expect(normalizeConsoleErrors({ message: "um só" })).toEqual(["um só"]);
+    expect(normalizeConsoleErrors(["a", { text: "b" }])).toEqual(["a", "b"]);
+    expect(formatConsoleEntry({ stack: "x" })).toBe('{"stack":"x"}');
+    expect(formatConsoleEntry({ message: "ok" })).not.toBe("[object Object]");
   });
 });
 

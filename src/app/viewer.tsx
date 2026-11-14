@@ -5,12 +5,13 @@ import { isPassing } from "@/lib/report";
 import { describeScreenshot, parseReport } from "@/lib/viewer-parse";
 import type { Report } from "@/lib/types";
 
-const EXAMPLE: Report = {
+const EXAMPLE = {
   store: "fixture-demo-qa",
   platform: "wake-mock",
   target: "fixture",
   stopped_before_payment: true,
-  consoleErrors: ["Uncaught TypeError: addToCart is not a function"],
+  suggestion: { text: "Hipótese no topo: função currency ausente no tema — não aplicar patch daqui." },
+  consoleErrors: [{ message: "Uncaught TypeError: addToCart is not a function" }],
   detects_everything: false,
   links: [
     { href: "http://127.0.0.1/sobre.html", status: 200, verdict: "ok" },
@@ -166,6 +167,11 @@ export function Viewer() {
               {status ? <span className={status.className}>{status.label}</span> : null}
             </h2>
             {usingExample ? <p className="muted">Dados de exemplo do fixture. Não é execução ao vivo.</p> : null}
+            {report.suggestionText ? (
+              <p className="hyp">
+                <strong>Sugestão</strong> {report.suggestionText} <em>apply: false</em>
+              </p>
+            ) : null}
             <p>
               Alvo: {report.target} · plataforma: {report.platform}
             </p>
