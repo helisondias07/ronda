@@ -7,13 +7,13 @@ Acesso 14/11/2026. **Não é oferta e não está implementado.** O visor publica
 | Superfície | O que faz | O que não faz |
 |---|---|---|
 | Site Hobby | Mostra `report.json` | Não busca URL de loja (SSRF) |
-| CLI no PC | Playwright no fixture ou origin **autorizado**; intercepta same-origin GET e barra outros métodos, origens externas e confirmação de pedido | Produção de cliente; POST/PUT/DELETE; pedido |
+| CLI no PC | Playwright no fixture ou URL de loopback literal `127.0.0.1` / `[::1]` com `--autorizo-este-ambiente`; intercepta same-origin GET e barra outros métodos, origens externas e confirmação de pedido | Nomes DNS, hosts remotos, produção de cliente; POST/PUT/DELETE; pedido |
 | Perfil de browser | Um por loja (ADX) | Reusar sessão entre lojas |
 | Página capturada | Título/h1 + sinais HTML básicos (`alt`, rótulo de input, texto de botão/link) | Não é WCAG/axe; não valida teclado, leitor de tela, contraste ou UI montada após captura |
 
 ## Limites de verificacao de rede
 
-O CLI foi executado contra o fixture. Os testes de links usam `fetch` injetado; nao houve teste de rede real dos bloqueios do Playwright nem simulacao de DNS rebinding. A politica atual recusa nomes DNS e restringe o alvo a fixture/loopback literal, mas isso nao e certificacao geral de isolamento de rede.
+O CLI foi executado contra o fixture. Os testes de links usam `fetch` injetado; não houve teste de rede real dos bloqueios do Playwright nem simulação de DNS rebinding. A política atual recusa nomes DNS e restringe o alvo a fixture/loopback literal, mas isso não é certificação geral de isolamento de rede.
 
 ## Figma (fase posterior, sem fingir)
 
@@ -38,7 +38,7 @@ Sem isso, a fase “loja de verdade” fica **blocked**.
 |---|---|---|
 | Agora | Fixture + visor honesto | Loja real |
 | A (feita no fixture) | CLI: jornada configurável local (teto 8, parar antes de pagar), GET same-origin, print+sha256, h1/título, sinais HTML básicos de acessibilidade, hipóteses `apply: false`. Sem `/api` de browser. | Produção; Figma falso; afirmar conformidade WCAG |
-| A2 | `npm run ronda -- --base-url … --autorizo-este-ambiente` em preview **local autorizado** | Produção |
+| A2 | **Não habilitada para preview remoto.** O CLI só aceita `http(s)://127.0.0.1` ou `http(s)://[::1]` literal com `--autorizo-este-ambiente`; hostname/DNS é recusado antes de abrir o browser. | Staging/DNS, produção e garantia geral de isolamento |
 | B | Anexar saída do `visual-review` no mesmo JSON (sugestão, `apply: false`) | Reimplementar Figma |
 | C | Login só com Vault | CAPTCHA, SMS, social, pedido |
 
@@ -52,7 +52,7 @@ Acesso 14/11/2026. R$ 0 neste Hobby. **Não é oferta.**
 |---|---|---|
 | Figma / `FIGMA_TOKEN` | Token + file/node autorizados | PNG local (`--ref-png`) até lá; `figma.available: false` |
 | Login / Vault | Conta de teste já existente | Sem cadastro, CAPTCHA, SMS ou social |
-| Loja de cliente / Admin Wake | Autorização escrita + origin allowlist | Só fixture ou localhost com `--autorizo-este-ambiente` |
+| Loja de cliente / Admin Wake | Fora do escopo do CLI atual; exigir autorização escrita em avaliação futura | Só fixture ou loopback literal `127.0.0.1` / `[::1]` com `--autorizo-este-ambiente` |
 | Pedido / pagamento / `checkoutComplete` | Fora da política | A jornada para em “Forma de pagamento” |
 | Checkly / Tracefox / ads | Orçamento | Playwright OSS no PC; R$ 0 |
 | Cobrança (Pix/cartão) | Vercel Pro + meio de pagamento | Migrar de Hobby **antes**; não contratar agora |
