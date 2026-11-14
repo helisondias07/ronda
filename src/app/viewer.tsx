@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { isPassing } from "@/lib/report";
+import { describeScreenshot, parseReport } from "@/lib/viewer-parse";
 import type { Report } from "@/lib/types";
 
 const EXAMPLE: Report = {
@@ -9,7 +10,7 @@ const EXAMPLE: Report = {
   platform: "wake-mock",
   target: "fixture",
   stopped_before_payment: true,
-  consoleErrors: [],
+  consoleErrors: ["Uncaught TypeError: addToCart is not a function"],
   detects_everything: false,
   links: [
     { href: "http://127.0.0.1/sobre.html", status: 200, verdict: "ok" },
@@ -29,23 +30,24 @@ const EXAMPLE: Report = {
   steps: [
     { id: "home", url: "http://127.0.0.1/home.html", pass: true, stopped_before_payment: false, screenshot: "ronda-out/home.png" },
     { id: "categoria", url: "http://127.0.0.1/categoria.html", pass: true, stopped_before_payment: false, screenshot: "ronda-out/categoria.png" },
-    { id: "produto", url: "http://127.0.0.1/produto.html", pass: true, stopped_before_payment: false, screenshot: "ronda-out/produto.png" },
+    {
+      id: "produto",
+      url: "http://127.0.0.1/produto.html",
+      pass: false,
+      stopped_before_payment: false,
+      screenshot: "ronda-out/produto.png",
+      error: '{"status_code":500,"message":"The function `currency` was not found"}',
+      suggestion: {
+        step: "produto",
+        hypothesis:
+          "O Storefront devolveu JSON com status_code 500 (erro Scriban). HTTP 200 não prova a página. Hipótese: função ou partial ausente no tema — não aplicar patch daqui.",
+        apply: false,
+      },
+    },
     { id: "carrinho", url: "http://127.0.0.1/carrinho.html", pass: true, stopped_before_payment: false, screenshot: "ronda-out/carrinho.png" },
     { id: "checkout", url: "http://127.0.0.1/checkout.html", pass: true, stopped_before_payment: true, screenshot: "ronda-out/checkout.png" },
   ],
 };
-
-function parseReport(raw: string): { ok: true; report: Report } | { ok: false; message: string } {
-  try {
-    const data = JSON.parse(raw) as Report;
-    if (!data || !Array.isArray(data.steps)) {
-      return { ok: false, message: "JSON sem a lista de etapas." };
-    }
-    return { ok: true, report: data };
-  } catch {
-    return { ok: false, message: "JSON inválido. Cole o report.json gerado no seu computador." };
-  }
-}
 
 export function Viewer() {
   const [raw, setRaw] = useState("");
@@ -178,12 +180,27 @@ export function Viewer() {
                     {step.stopped_before_payment ? (
                       <span className="parar"> — parado antes do pagamento</span>
                     ) : null}
-                    <div className="shot">{step.screenshot || "print faltando"}</div>
-                    {step.suggestion ? (
-                      <p className="hyp">
-                        {step.suggestion.hypothesis} <em>apply: false</em>
-                      </p>
-                    ) : null}
+                    <div className="shot">
+                      {(() => {
+                        const shot = describeScreenshot(step.screenshot);
+                        if (shot.src) {
+                          return (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img className="shot-img" src={shot.src} alt={`Print da etapa ${step.id} (embutido no JSON)`} />
+                          );
+                        }
+                        return shot.label;
+                      })()}
+                    </div>
+                    <p className="hyp">
+                      {step.suggestion ? (
+                        <>
+                          {step.suggestion.hypothesis} <em>apply: false</em>
+                        </>
+                      ) : (
+                        "Sem hipótese neste passo (etapa passou ou o JSON não trouxe suggestion)."
+                      )}
+                    </p>
                     {step.error ? <p className="bad">{step.error}</p> : null}
                   </div>
                 </li>
@@ -214,16 +231,22 @@ export function Viewer() {
                 </ol>
               </>
             ) : null}
+            <h2>Console (first-party)</h2>
+            {report.consoleErrors?.length ? (
+              <pre className="console">{report.consoleErrors.join("\n")}</pre>
+            ) : (
+              <p className="muted">Nenhum erro first-party neste JSON.</p>
+            )}
             <p className="hyp">Figma: {report.figma?.reason}</p>
             <p className="hyp">Login: {report.auth?.reason}</p>
-            <p className="muted">detects_everything: false. Sugestão ≠ correção.</p>
+            <p className="muted">detects_everything: false. Sugestão ≠ correção. Este visor não audita loja.</p>
           </section>
         ) : null}
       </main>
       <footer>
         <a href="/privacidade">Privacidade</a>
         {" · "}
-        Playground: <code>docs/playground-estados.html</code>
+        <a href="/playground-estados.html">Playground de estados</a>
       </footer>
     </>
   );

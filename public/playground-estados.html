@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Playground — Ronda (estados do laudo)</title>
+  <style>
+    :root {
+      --concreto: #e6e1d6;
+      --folha: #f7f4ec;
+      --carvao: #1c1c1a;
+      --muted: #5a564e;
+      --ok: #1f5c45;
+      --bad: #8b1e1e;
+      --parar: #1f4e79;
+      --sinal: #b8860b;
+      --line: #c9c2b3;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 17px/1.5 system-ui, sans-serif; color: var(--carvao); background: var(--concreto); }
+    header { background: var(--carvao); color: var(--folha); padding: 1.4rem 1.2rem; }
+    header h1 { margin: 0 0 .35rem; font-size: 1.45rem; font-weight: 600; }
+    header p { margin: 0; font-size: .92rem; color: #d9d4c8; max-width: 42rem; }
+    main { display: grid; gap: 1rem; padding: 1.1rem; max-width: 1100px; margin: auto; }
+    @media (min-width: 900px) { main { grid-template-columns: 1fr 1fr; } }
+    article { background: var(--folha); border: 1px solid var(--line); padding: 1rem 1.05rem; }
+    article h2 { margin: 0 0 .65rem; font-size: 1rem; font-weight: 500; color: var(--muted); }
+    .bar { display: flex; justify-content: space-between; gap: .5rem; align-items: baseline; }
+    .n { font-family: ui-monospace, Consolas, monospace; font-size: .85rem; }
+    .pill { font-size: .8rem; font-weight: 500; padding: .2rem .45rem; border: 1px solid currentColor; }
+    .ok { color: var(--ok); }
+    .bad { color: var(--bad); }
+    .wait { color: var(--carvao); background: var(--sinal); }
+    .stop { color: var(--parar); }
+    ol { margin: .5rem 0 0; padding-left: 1.15rem; }
+    .shot { margin-top: .55rem; min-height: 64px; border: 1px dashed var(--line); background: #efe8d6; color: var(--muted); display: flex; align-items: center; justify-content: center; font-size: .85rem; }
+    .err { font: .75rem/1.4 ui-monospace, Consolas, monospace; background: #f4e4e0; color: var(--bad); padding: .55rem; max-height: 7rem; overflow: auto; white-space: pre-wrap; }
+    .empty { color: var(--muted); }
+    .mobile { max-width: 280px; }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Ronda — estados do laudo</h1>
+    <p>Dados de exemplo. Sem rede. Loja fictícia “Demo QA”. A ronda nunca paga e nunca altera o tema. Esta página não dispara teste.</p>
+  </header>
+  <main>
+    <article>
+      <h2>1. Vazio</h2>
+      <p class="empty">Nenhum laudo ainda. No computador: <code>npm run ronda</code>. Aqui você só cola o JSON gerado.</p>
+    </article>
+    <article>
+      <h2>2. Rodando (só no PC)</h2>
+      <div class="bar"><span class="n">RONDA-0041 · Demo QA</span><span class="pill wait">rodando</span></div>
+      <ol>
+        <li>home — ok</li>
+        <li>categoria — ok</li>
+        <li>produto — …</li>
+      </ol>
+    </article>
+    <article>
+      <h2>3. Passou</h2>
+      <div class="bar"><strong>5/5 etapas</strong><span class="pill ok">passou</span></div>
+      <ol>
+        <li>home</li>
+        <li>categoria</li>
+        <li>produto</li>
+        <li>carrinho (1 item)</li>
+        <li>checkout — parado antes do pagamento</li>
+      </ol>
+      <div class="shot">print checkout.png</div>
+    </article>
+    <article>
+      <h2>4. Falhou (500 Scriban)</h2>
+      <div class="bar"><strong>produto</strong><span class="pill bad">falhou</span></div>
+      <p>HTTP 200 com JSON <code>status_code: 500</code> — a página não renderizou.</p>
+      <div class="err">{ "status_code": 500, "message": "The function `currency` was not found" }</div>
+    </article>
+    <article>
+      <h2>5. Checkout parado</h2>
+      <div class="bar"><strong>checkout</strong><span class="pill stop">stopped_before_payment</span></div>
+      <p>“Forma de pagamento” visível. Campo de cartão não preenchido. Mutation <code>checkoutComplete</code> não chamada.</p>
+    </article>
+    <article>
+      <h2>6. Sem print</h2>
+      <div class="bar"><strong>carrinho</strong><span class="pill bad">evidência ausente</span></div>
+      <div class="shot">screenshot faltando</div>
+    </article>
+    <article>
+      <h2>7. Texto longo</h2>
+      <div class="err">TimeoutError: locator.click: Timeout 15000ms exceeded.
+Call log:
+  - waiting for getByRole('link', { name: 'Adicionar ao carrinho' })
+  - retrying click action
+  - waiting for element to be visible, enabled and stable</div>
+    </article>
+    <article class="mobile">
+      <h2>8. Largura estreita</h2>
+      <div class="bar"><span class="n">393×852</span><span class="pill ok">passou</span></div>
+      <p>Mesmo laudo, coluna única. Botão de pagamento continua só leitura.</p>
+    </article>
+    <article>
+      <h2>9. Alvo recusado</h2>
+      <div class="bar"><strong>URL remota</strong><span class="pill bad">bloqueado</span></div>
+      <p>Sem <code>--autorizo-este-ambiente</code> a Ronda só corre o fixture local. Produção de cliente e pedido real ficam de fora.</p>
+    </article>
+    <article>
+      <h2>10. Links (fixture)</h2>
+      <div class="bar"><strong>6 hrefs</strong><span class="pill ok">GET same-origin</span></div>
+      <ol>
+        <li>sobre.html — 200</li>
+        <li>politica.html — 200</li>
+        <li>pagina-ausente.html — 404 (relatado, não corrigido)</li>
+        <li>mailto: — ignorado</li>
+        <li>example.com — externo, não buscado</li>
+      </ol>
+    </article>
+    <article>
+      <h2>11. SSRF recusado</h2>
+      <div class="bar"><strong>169.254.169.254</strong><span class="pill bad">skipped-ssrf</span></div>
+      <p>O visor na nuvem <strong>não busca URL</strong>. O CLI só faz GET no origin autorizado; IP privado, metadata e credencial na URL são bloqueados. Redirect para 10.x também.</p>
+    </article>
+    <article>
+      <h2>12. Figma (não fingido)</h2>
+      <div class="bar"><strong>visual-review</strong><span class="pill stop">indisponível</span></div>
+      <p>Sem token nem spec no disco. Não desenhamos um diff falso. O gate de pixel continua no Oasis, outro fluxo.</p>
+    </article>
+    <article>
+      <h2>13. Login (não fingido)</h2>
+      <div class="bar"><strong>conta de teste</strong><span class="pill stop">indisponível</span></div>
+      <p>Sem Vault. Não criamos cadastro, não preenchemos senha, não passamos de CAPTCHA/SMS.</p>
+    </article>
+    <article>
+      <h2>14. Institucionais</h2>
+      <div class="bar"><strong>allowlist</strong><span class="pill ok">2 páginas</span></div>
+      <p>Quem somos e Política no fixture. CMS de cliente não entra. Teto: 30 páginas, 80 links, 8s, só GET.</p>
+    </article>
+  </main>
+</body>
+</html>

@@ -27,7 +27,7 @@ O site publicado só **mostra** um `report.json`. Ele **não busca URL** (isolam
 - SaaS com OpenCode Go / chave GLM pessoal
 - Buscar URL a partir deste site na Vercel
 
-Playground visual: `docs/playground-estados.html`.
+Playground visual: `/playground-estados.html` no site publicado (cópia em `public/`; fonte em `docs/`).
 
 ## Rodar
 
