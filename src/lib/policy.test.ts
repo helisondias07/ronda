@@ -24,7 +24,12 @@ describe("policy", () => {
       "data:text/html,example",
       "http://127.0.0.1:4174/private",
       "http://[::1]:4173/home.html",
+      "http://[fc00::1]:4173/private",
+      "http://[fe80::1]:4173/private",
+      "http://[::ffff:127.0.0.1]:4173/private",
+      "http://[::ffff:169.254.169.254]:4173/private",
       "http://169.254.169.254/latest/meta-data",
+      "http://public-rebind.example:4173/private",
       "https://outside.invalid/after-redirect",
     ]) {
       expect(isAllowedBrowserRequest({ requestUrl, origin, method: "GET" }), requestUrl).toBe(false);

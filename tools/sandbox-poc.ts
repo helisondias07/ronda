@@ -90,9 +90,13 @@ async function main(): Promise<void> {
       "http://127.0.0.1:80/",
       "http://127.0.0.1:80@127.0.0.1/",
       "http://[::1]/",
+      "http://[fc00::1]/",
+      "http://[fe80::1]/",
       "http://[::ffff:127.0.0.1]/",
+      "http://[::ffff:169.254.169.254]/",
       "http://169.254.169.254/latest/meta-data/",
       "http://10.0.0.1/",
+      "http://public-rebind.example/",
       "https://example.com/",
       `http://user:pass@${new URL(targetOrigin).host}/home.html`,
     ]) {
