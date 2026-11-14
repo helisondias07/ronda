@@ -28,6 +28,13 @@ export function finalizeReport(report: Report): Report {
     institutional: report.institutional || [],
     figma: report.figma || FIGMA_GAP,
     auth: report.auth || AUTH_GAP,
+    pages: report.pages || [],
+    isolation: report.isolation || {
+      hostedFetch: false,
+      methods: "GET",
+      figmaFaked: false,
+      payment: false,
+    },
   };
 }
 
@@ -46,9 +53,14 @@ export function renderHtml(report: Report): string {
       const mark = s.pass ? "ok" : "falhou";
       const shot = s.screenshot ? s.screenshot : "print faltando";
       const stop = s.stopped_before_payment ? " — parado antes do pagamento" : "";
-      const hyp = s.suggestion ? `<p class="hyp">${escapeHtml(s.suggestion.hypothesis)} <em>apply: false</em></p>` : "";
+      const shotMeta = s.shotEvidence
+        ? ` ${s.shotEvidence.width || "?"}×${s.shotEvidence.height || "?"} sha256:${s.shotEvidence.sha256.slice(0, 12)}`
+        : "";
+      const hyp = s.suggestion
+        ? `<p class="hyp">Hipótese (não é patch): ${escapeHtml(s.suggestion.hypothesis)} <em>apply: false</em></p>`
+        : "";
       const n = String(i + 1).padStart(2, "0");
-      return `<li><span class="n">${n}</span><div><strong>${s.id}</strong> ${mark}${stop}<div class="shot">${escapeHtml(shot)}</div>${hyp}</div></li>`;
+      return `<li><span class="n">${n}</span><div><strong>${s.id}</strong> ${mark}${stop}<div class="shot">${escapeHtml(shot)}${escapeHtml(shotMeta)}</div>${hyp}</div></li>`;
     })
     .join("");
   return `<!DOCTYPE html>
@@ -76,7 +88,7 @@ ol{padding:0;list-style:none} li{display:grid;grid-template-columns:2.5rem 1fr;m
 <p class="pill ${ok ? "ok" : "bad"}">${ok ? "passou · parado antes de pagar" : "falhou ou incompleto"}</p>
 </header>
 <main>
-<p>Este laudo não altera a loja. Não pagou. Não garante que detecta tudo.</p>
+<p>Este laudo não altera a loja. Não pagou. Não garante que detecta tudo. Sugestão = hipótese, apply: false. Figma não foi comparado.</p>
 <ol>${rows}</ol>
 <p>Links: ${(report.links || []).length} · institucionais: ${(report.institutional || []).length}</p>
 <p>Figma: ${escapeHtml((report.figma && report.figma.reason) || "indisponível")}</p>

@@ -1,10 +1,20 @@
 export type StepId = "home" | "categoria" | "produto" | "carrinho" | "checkout";
 
+export type ShotEvidence = {
+  path: string;
+  sha256: string;
+  bytes: number;
+  width?: number;
+  height?: number;
+  note: string;
+};
+
 export type StepResult = {
   id: StepId | string;
   url: string;
   pass: boolean;
   screenshot?: string;
+  shotEvidence?: ShotEvidence;
   stopped_before_payment: boolean;
   error?: string;
   suggestion?: Suggestion;
@@ -16,6 +26,23 @@ export type Suggestion = {
   step: StepId | string;
   hypothesis: string;
   apply: false;
+  kind?: "hypothesis";
+};
+
+export type PageFacts = {
+  url: string;
+  status?: number;
+  title: string;
+  h1: string;
+  pass: boolean;
+  suggestion?: Suggestion;
+};
+
+export type IsolationNote = {
+  hostedFetch: false;
+  methods: "GET";
+  figmaFaked: false;
+  payment: false;
 };
 
 export type Skip = {
@@ -61,6 +88,8 @@ export type Report = {
   institutional: InstitutionalPage[];
   figma: Skip;
   auth: Skip;
+  pages?: PageFacts[];
+  isolation?: IsolationNote;
 };
 
 export type Target =

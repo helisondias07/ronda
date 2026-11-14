@@ -11,5 +11,5 @@ export function suggest(step: StepResult): Suggestion | null {
     hypothesis =
       "O seletor não ficou visível a tempo. Hipótese: preview local sem interação, CTA com texto diferente, ou minicart por snippet. Só relata.";
   }
-  return { step: step.id, hypothesis, apply: false };
+  return { step: step.id, hypothesis, apply: false, kind: "hypothesis" };
 }

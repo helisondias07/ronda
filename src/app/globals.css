@@ -154,6 +154,7 @@ ol.plain li { display: list-item; margin: 0.35rem 0; }
 }
 
 .hyp { color: var(--suave); font-size: 0.95rem; }
+.mono { font-family: var(--font-mono); font-size: 0.82rem; }
 
 footer { padding: 1rem 1.2rem 2rem; max-width: 42rem; margin: auto; color: var(--suave); font-size: 0.92rem; }
 

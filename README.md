@@ -8,7 +8,7 @@ O site publicado só **mostra** um `report.json`. Ele **não busca URL** (isolam
 
 | Função | Como |
 |---|---|
-| Fixture Demo QA | `npm run ronda` — 5 etapas, `stopped_before_payment` |
+| Fixture Demo QA | `npm run ronda` — 5 etapas, `stopped_before_payment`, print+sha256, h1/título |
 | Institucionais | allowlist `sobre.html`, `politica.html` |
 | Links / botões com href | GET same-origin, teto 80, timeout 8s; mailto/externo/script ignorados |
 | Console | só `pageerror` / `console.error` first-party |
@@ -22,6 +22,7 @@ O site publicado só **mostra** um `report.json`. Ele **não busca URL** (isolam
 - Pedido, cartão, 3DS, `checkoutComplete`, PATCH/POST destrutivo
 - Patch em tema, Admin, FTP, preço/estoque/frete
 - Loja de cliente em produção
+- Endpoint público de Playwright / crawl (o visor Hobby **não** tem `/api`)
 - **Figma:** sem token/spec não comparamos; não desenhamos diff falso (use `visual-review` no Oasis)
 - **Login:** sem conta no Vault não autenticamos; não criamos cadastro
 - SaaS com OpenCode Go / chave GLM pessoal

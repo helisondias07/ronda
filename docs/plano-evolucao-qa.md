@@ -31,7 +31,8 @@ Sem isso, a fase “loja de verdade” fica **blocked**.
 | Fase | Escopo | Fora |
 |---|---|---|
 | Agora | Fixture + visor honesto | Loja real |
-| A | `npm run ronda -- --base-url … --autorizo-este-ambiente` em preview local | Produção |
+| A (feita no fixture) | CLI: 5 etapas, GET same-origin, print+sha256, h1/título, hipóteses `apply: false`. Sem `/api` de browser. | Produção; Figma falso |
+| A2 | `npm run ronda -- --base-url … --autorizo-este-ambiente` em preview **local autorizado** | Produção |
 | B | Anexar saída do `visual-review` no mesmo JSON (sugestão, `apply: false`) | Reimplementar Figma |
 | C | Login só com Vault | CAPTCHA, SMS, social, pedido |
 

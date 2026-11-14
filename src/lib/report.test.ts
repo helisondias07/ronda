@@ -57,6 +57,7 @@ describe("report", () => {
     };
     const done = finalizeReport(report);
     expect(done.steps[0].suggestion?.apply).toBe(false);
+    expect(done.steps[0].suggestion?.kind).toBe("hypothesis");
     expect(done.steps[0].suggestion?.hypothesis).toMatch(/Scriban/);
     expect(isPassing(done)).toBe(false);
   });
@@ -77,6 +78,8 @@ describe("report", () => {
     });
     expect(html).toMatch(/parado antes do pagamento/);
     expect(html).toMatch(/não altera a loja/);
+    expect(html).toMatch(/hipótese/i);
     expect(html).not.toMatch(/pedido concluído/);
+    expect(html).not.toMatch(/comparação com Figma/);
   });
 });

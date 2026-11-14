@@ -79,6 +79,10 @@ function asStep(raw: unknown): StepResult {
     url: typeof rec.url === "string" ? rec.url : "",
     pass: Boolean(rec.pass),
     screenshot: typeof rec.screenshot === "string" ? rec.screenshot : undefined,
+    shotEvidence:
+      rec.shotEvidence && typeof rec.shotEvidence === "object"
+        ? (rec.shotEvidence as StepResult["shotEvidence"])
+        : undefined,
     stopped_before_payment: Boolean(rec.stopped_before_payment),
     error: typeof rec.error === "string" ? rec.error : rec.error != null ? stringifyUnknown(rec.error) : undefined,
     suggestion: pasted ? { step: id, hypothesis: pasted, apply: false } : undefined,
@@ -115,6 +119,13 @@ export function parseReport(raw: string): { ok: true; report: Report } | { ok: f
         available: false,
         reason:
           "sem conta de teste no Vault. A Ronda não cria cadastro, não preenche senha e não automatiza CAPTCHA/SMS/social.",
+      },
+      pages: Array.isArray(data.pages) ? (data.pages as Report["pages"]) : [],
+      isolation: {
+        hostedFetch: false,
+        methods: "GET",
+        figmaFaked: false,
+        payment: false,
       },
     });
     const stepsWithPasted = finalized.steps.map((step, i) => {

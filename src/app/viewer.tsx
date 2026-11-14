@@ -199,10 +199,17 @@ export function Viewer() {
                         return shot.label;
                       })()}
                     </div>
+                    {step.shotEvidence ? (
+                      <p className="muted mono">
+                        print {step.shotEvidence.width || "?"}×{step.shotEvidence.height || "?"} · sha256{" "}
+                        {step.shotEvidence.sha256.slice(0, 12)} · {step.shotEvidence.note}
+                      </p>
+                    ) : null}
                     <p className="hyp">
                       {step.suggestion ? (
                         <>
-                          {step.suggestion.hypothesis} <em>apply: false</em>
+                          Hipótese (não é patch): {step.suggestion.hypothesis}{" "}
+                          <em>apply: false</em>
                         </>
                       ) : step.formatWarning ? (
                         "Não inventamos o nome da etapa a partir de um formato não reconhecido."
@@ -215,6 +222,24 @@ export function Viewer() {
                 </li>
               ))}
             </ol>
+            {report.pages?.length ? (
+              <>
+                <h2>Páginas (auditoria GET, fixture/autorizado)</h2>
+                <ol className="plain">
+                  {report.pages.map((pg) => (
+                    <li key={pg.url}>
+                      {pg.url} — {pg.pass ? "ok" : "falhou"} {pg.status ? `(${pg.status})` : ""}{" "}
+                      {pg.h1 ? `h1: ${pg.h1}` : "sem h1"}
+                      {pg.suggestion ? (
+                        <p className="hyp">
+                          Hipótese (não é patch): {pg.suggestion.hypothesis} <em>apply: false</em>
+                        </p>
+                      ) : null}
+                    </li>
+                  ))}
+                </ol>
+              </>
+            ) : null}
             {report.institutional?.length ? (
               <>
                 <h2>Institucionais</h2>
@@ -248,7 +273,10 @@ export function Viewer() {
             )}
             <p className="hyp">Figma: {report.figma?.reason}</p>
             <p className="hyp">Login: {report.auth?.reason}</p>
-            <p className="muted">detects_everything: false. Sugestão ≠ correção. Este visor não audita loja.</p>
+            <p className="muted">
+              detects_everything: false. Sugestão = hipótese, apply: false. Figma não comparado. Este visor
+              não audita loja e não abre Playwright.
+            </p>
           </section>
         ) : null}
       </main>

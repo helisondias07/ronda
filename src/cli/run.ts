@@ -16,7 +16,9 @@ import { FIXTURE_JOURNEY } from "../lib/wake";
 import { checkInstitutional, checkPlanned, extractHrefs, planLinks } from "../lib/scan";
 import { INSTITUTIONAL_SLUGS, LIMITS } from "../lib/limits";
 import { authSkip, figmaSkip } from "../lib/gaps";
-import type { Report, StepResult } from "../lib/types";
+import { describeShotFile } from "../lib/evidence";
+import { auditHtml } from "../lib/page-audit";
+import type { PageFacts, Report, StepResult } from "../lib/types";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const FIXTURE = path.join(root, "fixture");
@@ -83,8 +85,11 @@ async function main(): Promise<void> {
     institutional: [],
     figma: figmaSkip(),
     auth: authSkip(),
+    pages: [],
+    isolation: { hostedFetch: false, methods: "GET", figmaFaked: false, payment: false },
   };
   const htmls: string[] = [];
+  const pages: PageFacts[] = [];
   const allowLocal = true;
 
   const hosted = target.kind === "fixture" ? await serveFixture() : null;
@@ -127,11 +132,14 @@ async function main(): Promise<void> {
       }
       const shot = path.join(OUT, `${step.id}.png`);
       await page.screenshot({ path: shot, fullPage: true });
+      const facts = auditHtml(page.url(), html);
+      pages.push(facts);
       const entry: StepResult = {
         id: step.id,
         url: page.url(),
         pass: true,
         screenshot: shot,
+        shotEvidence: describeShotFile(shot),
         stopped_before_payment: Boolean(step.stop),
       };
       report.steps.push(entry);
@@ -159,6 +167,8 @@ async function main(): Promise<void> {
     );
     report.figma = figmaSkip();
     report.auth = authSkip();
+    report.pages = pages;
+    report.isolation = { hostedFetch: false, methods: "GET", figmaFaked: false, payment: false };
     report.detects_everything = false;
     const done = finalizeReport(report);
     fs.writeFileSync(path.join(OUT, "report.json"), JSON.stringify(done, null, 2));
