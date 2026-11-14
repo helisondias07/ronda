@@ -37,6 +37,10 @@
     .err { font: .75rem/1.4 ui-monospace, Consolas, monospace; background: #f4e4e0; color: var(--bad); padding: .55rem; max-height: 7rem; overflow: auto; white-space: pre-wrap; }
     .empty { color: var(--muted); }
     .mobile { max-width: 280px; }
+    .steps { padding-left: 0; list-style: none; }
+    .steps li { display: grid; grid-template-columns: 2.5rem minmax(0, 1fr); gap: .4rem; min-width: 0; }
+    .steps li > div { min-width: 0; overflow-wrap: anywhere; }
+    .steps .shot { overflow-wrap: anywhere; }
     @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
   </style>
 </head>
@@ -101,9 +105,14 @@ Call log:
       <p>Mesmo laudo, coluna única. Botão de pagamento continua só leitura.</p>
     </article>
     <article>
+      <h2>8a. Etapa longa em 320 px</h2>
+      <ol class="steps"><li><span class="n">03</span><div><strong>produto</strong> falhou · <span>https://demo.example/uma-url-com-um-trecho-muito-longo-sem-pontos-ou-espacos-para-verificar-a-quebra</span><div class="shot">erro: TimeoutError_com_identificador_extremamente_longo_sem_espacos_que_deve_quebrar_sem_cortar_conteudo</div></div></li></ol>
+      <p>O texto inteiro quebra em várias linhas; sem rolagem horizontal e sem ocultar evidência.</p>
+    </article>
+    <article>
       <h2>9. Alvo recusado</h2>
       <div class="bar"><strong>URL remota</strong><span class="pill bad">bloqueado</span></div>
-      <p>Sem <code>--autorizo-este-ambiente</code> a Ronda só corre o fixture local. Produção de cliente e pedido real ficam de fora.</p>
+      <p>O CLI roda só no fixture local controlado. <code>--base-url</code> é recusado porque até GET pode ter efeitos. Jornada customizada e cliques fora da allowlist são bloqueados.</p>
     </article>
     <article>
       <h2>10. Links (fixture)</h2>

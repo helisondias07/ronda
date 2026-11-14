@@ -4,6 +4,7 @@ export type JourneyStep = {
   id: StepId | string;
   heading: string;
   click?: string;
+  clickRole?: "link" | "button";
   stop?: boolean;
 };
 
@@ -11,7 +12,7 @@ export const FIXTURE_JOURNEY: JourneyStep[] = [
   { id: "home", heading: "Loja Demo QA" },
   { id: "categoria", heading: "Tênis", click: "Ver categoria Tênis" },
   { id: "produto", heading: "Tênis Demo QA", click: "Ver produto" },
-  { id: "carrinho", heading: "Carrinho", click: "Adicionar ao carrinho" },
+  { id: "carrinho", heading: "Carrinho", click: "Adicionar ao carrinho", clickRole: "button" },
   { id: "checkout", heading: "Forma de pagamento", click: "Ir ao checkout", stop: true },
 ];
 

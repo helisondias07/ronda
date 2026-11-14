@@ -8,14 +8,14 @@ O site publicado só **mostra** um `report.json`. Ele **não busca URL** (isolam
 
 | Função | Como |
 |---|---|
-| Fixture Demo QA | `npm run ronda` — jornada builtin (5 etapas) ou `--journey fixture/journey.json`; `stopped_before_payment`, print+sha256, h1/título |
+| Fixture Demo QA | `npm run ronda` — sequência fixa validada (5 etapas); cliques só nos quatro controles e destinos revisados do fixture. JSON de jornada customizado é recusado; laudo registra `stopped_before_payment`, print+sha256, h1/título |
 | PNG de referência | `--ref-png` + `--ref-step` + `--viewport 1280x720` no PC; diff em `ronda-out/report.html` (`<img src="diff-….png">`). O visor Hobby **não** lê disco. **Não é Figma.** |
 | Institucionais | allowlist `sobre.html`, `politica.html` |
 | Links / botões com href | GET same-origin, teto 80, timeout 8s; mailto/externo/script ignorados |
 | Console | só `pageerror` / `console.error` first-party |
 | 500 Scriban | JSON `status_code: 500` = falha, mesmo com HTTP 200 |
 | Checagem HTML básica | Título, h1, `alt` de imagem e rótulo de controle; heurística parcial, não auditoria WCAG |
-| SSRF | bloqueia IP privado, metadata, credencial na URL, redirect para 10.x |
+| Alvo local | somente fixture controlado. `--base-url` está desativado porque GET também pode ter efeitos; nenhum site externo ou preview é aceito. |
 | Sugestão | hipótese no laudo com `apply: false` |
 | Visor | cola JSON; exemplo é o fixture, rotulado |
 
@@ -32,7 +32,7 @@ O site publicado só **mostra** um `report.json`. Ele **não busca URL** (isolam
 
 Playground visual: `/playground-estados.html` no site publicado (cópia em `public/`; fonte em `docs/`).
 
-Evolução (não implementada): `docs/plano-evolucao-qa.md` — Figma via `visual-review`, isolamento CLI×visor, acesso só com autorização. Sem loja de cliente neste Hobby.
+Próximos limites: `docs/plano-evolucao-qa.md` — Figma via `visual-review`, eventual sandbox de rede isolado antes de avaliar preview. Sem loja de cliente neste Hobby.
 
 ## Rodar
 
@@ -45,12 +45,7 @@ npm run ronda -- --journey fixture/journey.json
 npm run dev
 ```
 
-Preview local autorizado (não é produção de cliente):
-
-```bash
-npm run ronda -- --base-url http://127.0.0.1:5000 --autorizo-este-ambiente
-npm run ronda -- --viewport 1280x720 --ref-png caminho/home.png --ref-step home
-```
+`--base-url` é recusado, inclusive para loopback, porque não há isolamento suficiente para GET com efeitos. PNG local continua disponível com `--viewport 1280x720 --ref-png caminho/home.png --ref-step home` no fixture.
 
 O visor Hobby **não** recebe o PNG. Diff fica em `ronda-out/diff-*.png`.
 
@@ -58,8 +53,9 @@ O visor Hobby **não** recebe o PNG. Diff fica em `ronda-out/diff-*.png`.
 
 - Processo da jornada: Playwright local. Processo do visor: Next.js sem `fetch` de alvo.
 - Só GET. Sem `file:`, `gopher:`, credencial na URL.
-- Origin limitado a fixture ou literal loopback 127.0.0.1 / [::1], com --autorizo-este-ambiente; nomes DNS e destinos remotos estao bloqueados.
+- CLI executa apenas no fixture controlado. `--base-url` está desativado; cliques precisam corresponder à sequência validada de origem, rótulo, papel e destino.
 - Teto: 30 páginas, 80 links, 2 redirects, 8s.
+- A política foi exercitada no fixture e com fetch injetado; não houve teste real de interceptação da rede do Chromium nem DNS rebinding.
 
 ## Deploy (sem cobrar)
 

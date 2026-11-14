@@ -49,6 +49,14 @@ export type IsolationNote = {
   payment: false;
 };
 
+export type JourneyAction = {
+  id: string;
+  heading: string;
+  click?: string;
+  clickRole?: string;
+  stop: boolean;
+};
+
 export type Skip = {
   available: false;
   reason: string;
@@ -100,6 +108,8 @@ export type Report = {
     source: string;
     startPath: string;
     stepIds: string[];
+    actions?: JourneyAction[];
+    actionWarnings?: string[];
     stopBeforePayment: true;
   };
 };

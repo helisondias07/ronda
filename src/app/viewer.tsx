@@ -34,6 +34,13 @@ const EXAMPLE = {
     source: "builtin",
     startPath: "/home.html",
     stepIds: ["home", "categoria", "produto", "carrinho", "checkout"],
+    actions: [
+      { id: "home", heading: "Loja Demo QA", stop: false },
+      { id: "categoria", heading: "Tênis", click: "Ver categoria Tênis", clickRole: "link", stop: false },
+      { id: "produto", heading: "Tênis Demo QA", click: "Ver produto", clickRole: "link", stop: false },
+      { id: "carrinho", heading: "Carrinho", click: "Adicionar ao carrinho", clickRole: "button", stop: false },
+      { id: "checkout", heading: "Forma de pagamento", click: "Ir ao checkout", clickRole: "link", stop: true },
+    ],
     stopBeforePayment: true,
   },
   steps: [
@@ -107,22 +114,20 @@ export function Viewer() {
               <code>npm test</code>.
             </li>
             <li>
-              Jornada no fixture: <code>npm run ronda</code> (ou <code>--journey fixture/journey.json</code>).
-              Gera <code>ronda-out/report.json</code> e prints. Para no “Forma de pagamento”. Não paga e não
-              altera o site.
+              A jornada roda apenas no fixture controlado: <code>npm run ronda</code>. Configurações diferentes de
+              clique, rótulo, página ou etapa são bloqueadas. Cada clique permitido tem rota e destino revisados.
+              Gera <code>ronda-out/report.json</code> e prints; termina na etapa de pagamento fictícia sem enviar pedido.
             </li>
             <li>Cole o JSON abaixo. Sugestão de correção vem no laudo; aplicar no tema é outro fluxo.</li>
           </ol>
           <p className="muted">
             Sem OpenCode Go, sem chave de LLM, sem Admin Wake, sem pedido. Esta página <strong>não
-            busca URL</strong>. Preview só aceita loopback literal <code>127.0.0.1</code> ou <code>[::1]</code>, com{" "}
-            <code>--autorizo-este-ambiente</code>; DNS e hosts remotos são recusados. Isso restringe o alvo, mas não
-            comprova isolamento geral de rede; não rodamos teste real de rede nem simulação de DNS rebinding.
+            busca URL</strong>. Por segurança, <code>--base-url</code> está desativado: o CLI aceita somente o fixture
+            local controlado. Não afirmamos proteção geral de rede nem cobrimos sites reais.
           </p>
           <p>
-            <strong>Já funciona:</strong> jornada demo configurável (JSON local, teto 8 etapas, obrigatório
-            parar antes de pagar); institucionais da allowlist; GET same-origin com teto 80 no CLI; fixture ou loopback
-            literal, sem nomes DNS ou destinos remotos;
+            <strong>Já funciona:</strong> jornada demo fixa do fixture (controles e destinos permitidos revisados);
+            institucionais da allowlist; GET same-origin com teto 80 no CLI, apenas no fixture;
             console first-party mascarado; título/h1 e sinais HTML básicos de acessibilidade (heurística parcial,
             não é auditoria WCAG); laudo JSON/HTML. <strong>Ainda não:</strong> Figma, login, loja
             de cliente, Nuvemshop, correção do tema, cobrança. Hospedagem: Vercel Hobby — uso pessoal ou não comercial (
@@ -190,6 +195,22 @@ export function Viewer() {
                 ? ` · jornada ${report.journey.name} (${report.journey.stepIds.join(" → ")}) · para antes de pagar`
                 : ""}
             </p>
+            {report.journey?.actions?.length ? (
+              <details>
+                <summary>Ver configuração registrada da jornada</summary>
+                <p>Início: <code>{report.journey.startPath}</code></p>
+                <ol>
+                  {report.journey.actions.map((action) => (
+                    <li key={action.id}>
+                      <strong>{action.heading}</strong>
+                      {action.click ? ` · clique ${action.clickRole || "link"}: “${action.click}”` : " · sem clique"}
+                      {action.stop ? " · ponto de parada antes do pagamento" : ""}
+                    </li>
+                  ))}
+                </ol>
+                {report.journey.actionWarnings?.map((warning) => <p className="bad" key={warning}>{warning}</p>)}
+              </details>
+            ) : null}
             <ol className="steps">
               {report.steps.map((step, i) => (
                 <li key={`${step.id}-${step.url}-${i}`}>

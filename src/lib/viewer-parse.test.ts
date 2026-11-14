@@ -140,6 +140,30 @@ describe("parseReport", () => {
     expect(parsed.report.steps[1].formatWarning).toBeUndefined();
   });
 
+  it("mostra ações configuradas no laudo e identifica formato desconhecido", () => {
+    const parsed = parseReport(JSON.stringify({
+      journey: {
+        name: "local",
+        source: "journey.json",
+        startPath: "/home.html",
+        stepIds: ["home", "cart"],
+        actions: [
+          { id: "home", heading: "Home", click: "Adicionar", clickRole: "button", stop: false },
+          null,
+        ],
+        stopBeforePayment: true,
+      },
+      steps: [
+        { id: "home", pass: true, stopped_before_payment: false },
+        { id: "cart", pass: true, stopped_before_payment: true },
+      ],
+    }));
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+    expect(parsed.report.journey?.actions?.[0]).toMatchObject({ click: "Adicionar", clickRole: "button" });
+    expect(parsed.report.journey?.actionWarnings).toEqual(["1 ação(ões) da jornada não foram reconhecidas."]);
+  });
+
   it("preserva checagens HTML básicas e ignora páginas com formato inválido", () => {
     const parsed = parseReport(JSON.stringify({
       steps: [{ id: "home", pass: true, stopped_before_payment: false }],

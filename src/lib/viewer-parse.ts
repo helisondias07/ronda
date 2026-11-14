@@ -1,5 +1,5 @@
 import { finalizeReport } from "./report";
-import type { PageFacts, Report, StepId, StepResult } from "./types";
+import type { JourneyAction, PageFacts, Report, StepId, StepResult } from "./types";
 import { asVisual } from "./visual-view";
 
 export const KNOWN_STEP_IDS: StepId[] = ["home", "categoria", "produto", "carrinho", "checkout"];
@@ -71,11 +71,27 @@ function asJourney(raw: unknown): Report["journey"] | undefined {
     ? rec.stepIds.filter((id): id is string => typeof id === "string" && id.trim().length > 0)
     : [];
   if (!name || stepIds.length === 0) return undefined;
+  const rawActions = Array.isArray(rec.actions) ? rec.actions : undefined;
+  const actions = rawActions?.flatMap((item): JourneyAction[] => {
+    if (!item || typeof item !== "object" || Array.isArray(item)) return [];
+    const action = item as Record<string, unknown>;
+    if (typeof action.id !== "string" || !action.id.trim()) return [];
+    return [{
+      id: action.id,
+      heading: typeof action.heading === "string" ? action.heading : "etapa não identificada",
+      click: typeof action.click === "string" ? action.click : undefined,
+      clickRole: typeof action.clickRole === "string" ? action.clickRole : undefined,
+      stop: action.stop === true,
+    }];
+  });
+  const invalidActions = rawActions ? rawActions.length - (actions?.length || 0) : 0;
   return {
     name,
     source: source || "pasted",
     startPath: startPath || "/",
     stepIds,
+    actions,
+    actionWarnings: invalidActions ? [`${invalidActions} ação(ões) da jornada não foram reconhecidas.`] : undefined,
     stopBeforePayment: true,
   };
 }

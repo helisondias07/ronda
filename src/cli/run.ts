@@ -1,5 +1,5 @@
 /**
- * Ronda CLI: jornada home→checkout no fixture (ou localhost autorizado).
+ * Ronda CLI: jornada home→checkout somente no fixture controlado.
  * Nunca preenche cartão, nunca chama checkoutComplete, nunca grava tema.
  */
 import http from "node:http";
@@ -7,6 +7,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
+import type { Browser, Page } from "playwright";
 import { resolveTarget } from "../lib/allowlist";
 import { assertNotPaid, assertReportOnly, isAllowedBrowserRequest, isPaymentCompletePath } from "../lib/policy";
 import { detectScribanError } from "../lib/scriban";
@@ -19,6 +20,8 @@ import { authSkip, figmaSkip } from "../lib/gaps";
 import { describeShotFile } from "../lib/evidence";
 import { auditHtml } from "../lib/page-audit";
 import { comparePngFiles, parseViewport } from "../lib/visual-png";
+import { clickFixtureAction, isBuiltInFixtureJourney } from "../lib/fixture-click";
+import { closeBrowser, closeServer } from "../lib/resource-cleanup";
 import type { PageFacts, Report, StepResult, VisualCompare } from "../lib/types";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -32,10 +35,6 @@ const MIME: Record<string, string> = {
 function arg(name: string): string | undefined {
   const i = process.argv.indexOf(name);
   return i >= 0 ? process.argv[i + 1] : undefined;
-}
-
-function hasFlag(name: string): boolean {
-  return process.argv.includes(name);
 }
 
 function loadJourney(): LoadedJourney {
@@ -83,16 +82,18 @@ function serveFixture(): Promise<{ server: http.Server; origin: string }> {
 async function main(): Promise<void> {
   const target = resolveTarget({
     baseUrl: arg("--base-url"),
-    authorize: hasFlag("--autorizo-este-ambiente"),
   });
 
   assertReportOnly(false);
   const journey = loadJourney();
+  if (!isBuiltInFixtureJourney(journey)) {
+    throw new Error("política: execução restrita à jornada exata do fixture controlado; jornada configurada foi bloqueada");
+  }
 
   const report: Report = {
-    store: target.kind === "fixture" ? "fixture-demo-qa" : target.url,
-    platform: target.kind === "fixture" ? "wake-mock" : "wake",
-    target: target.kind === "fixture" ? "fixture" : "authorized-local",
+    store: "fixture-demo-qa",
+    platform: "wake-mock",
+    target: "fixture",
     steps: [],
     stopped_before_payment: false,
     consoleErrors: [],
@@ -108,6 +109,13 @@ async function main(): Promise<void> {
       source: journey.source,
       startPath: journey.startPath,
       stepIds: journey.steps.map((s) => s.id),
+      actions: journey.steps.map((step) => ({
+        id: step.id,
+        heading: step.heading,
+        click: step.click,
+        clickRole: step.click ? step.clickRole || "link" : undefined,
+        stop: Boolean(step.stop),
+      })),
       stopBeforePayment: true,
     },
   };
@@ -120,43 +128,47 @@ async function main(): Promise<void> {
   const refStep = arg("--ref-step") || "home";
   const refDir = arg("--ref-dir");
 
-  const hosted = target.kind === "fixture" ? await serveFixture() : null;
-  const origin = target.kind === "fixture" ? hosted!.origin : target.url;
-
-  fs.mkdirSync(OUT, { recursive: true });
-
-  const browser = await chromium.launch({ headless: true });
-  const context = await browser.newContext({ viewport, serviceWorkers: "block" });
-  const page = await context.newPage();
-  await page.route("**/*", async (route) => {
-    const request = route.request();
-    if (!isAllowedBrowserRequest({ requestUrl: request.url(), origin, method: request.method() })) {
-      await route.abort("blockedbyclient");
-      return;
-    }
-    await route.continue();
-  });
+  let hosted: Awaited<ReturnType<typeof serveFixture>> | undefined;
+  let origin: string | undefined;
+  let browser: Browser | undefined;
+  let page: Page | undefined;
+  let scanReady = false;
   const rawConsole: string[] = [];
   let documentStatus = 0;
-  page.on("pageerror", (e) => rawConsole.push(String(e)));
-  page.on("response", (response) => {
-    if (response.request().isNavigationRequest() && response.frame() === page.mainFrame()) {
-      documentStatus = response.status();
-    }
-  });
-  page.on("console", (m) => {
-    if (m.type() === "error") rawConsole.push(m.text());
-  });
-
   let failed = false;
   try {
+    hosted = await serveFixture();
+    origin = hosted.origin;
+    fs.mkdirSync(OUT, { recursive: true });
+    browser = await chromium.launch({ headless: true });
+    const context = await browser.newContext({ viewport, serviceWorkers: "block" });
+    page = await context.newPage();
+    await page.route("**/*", async (route) => {
+      const request = route.request();
+      if (!isAllowedBrowserRequest({ requestUrl: request.url(), origin: origin!, method: request.method() })) {
+        await route.abort("blockedbyclient");
+        return;
+      }
+      await route.continue();
+    });
+    page.on("pageerror", (e) => rawConsole.push(String(e)));
+    page.on("response", (response) => {
+      if (response.request().isNavigationRequest() && response.frame() === page?.mainFrame()) {
+        documentStatus = response.status();
+      }
+    });
+    page.on("console", (m) => {
+      if (m.type() === "error") rawConsole.push(m.text());
+    });
+    scanReady = true;
+
     await page.goto(`${origin}${journey.startPath}`, { waitUntil: "domcontentloaded" });
     for (const step of journey.steps) {
       if (isPaymentCompletePath(new URL(page.url()).pathname)) {
         throw new Error("política: a Ronda não abre confirmação de pedido");
       }
       if (step.click) {
-        await page.getByRole("link", { name: step.click, exact: true }).click();
+        await clickFixtureAction(page, step, target.kind, new URL(page.url()).pathname);
       }
       if (isPaymentCompletePath(new URL(page.url()).pathname)) {
         throw new Error("política: a Ronda bloqueia confirmação de pedido");
@@ -167,6 +179,9 @@ async function main(): Promise<void> {
       if (!scriban.ok) throw new Error(`Scriban: ${scriban.message}`);
       await page.getByRole("heading", { name: step.heading, exact: true }).waitFor({ state: "visible", timeout: 5000 });
       if (step.stop) {
+        if (step.id !== "checkout" || new URL(page.url()).pathname !== "/checkout.html" || step.heading !== "Forma de pagamento") {
+          throw new Error("política: parada antes do pagamento exige a etapa checkout exata do fixture");
+        }
         const cardValue = await page.locator('input[name="card"]').inputValue().catch(() => "");
         assertNotPaid({
           pathname: new URL(page.url()).pathname,
@@ -224,36 +239,65 @@ async function main(): Promise<void> {
     report.error = String(err);
     report.steps.push({
       id: journey.steps[report.steps.length]?.id || "falha",
-      url: page.url(),
+      url: page?.url() || (origin ? `${origin}${journey.startPath}` : "fixture unavailable"),
       pass: false,
       stopped_before_payment: false,
       error: String(err),
     });
   } finally {
-    report.consoleErrors = filterConsole(rawConsole, new URL(origin).hostname);
-    const hrefs = htmls.flatMap(extractHrefs);
-    const planned = planLinks(hrefs, origin, allowLocal);
-    report.links = await checkPlanned(planned, (url, init) => fetch(url, init));
-    report.institutional = await checkInstitutional(
-      origin,
-      INSTITUTIONAL_SLUGS,
-      (url, init) => fetch(url, init),
-      allowLocal,
-    );
+    try {
+      await closeBrowser(browser);
+    } catch (err) {
+      failed = true;
+      report.error = `${report.error ? `${report.error}; ` : ""}browser cleanup: ${String(err)}`;
+    }
+
+    if (scanReady && origin) {
+      try {
+        report.consoleErrors = filterConsole(rawConsole, new URL(origin).hostname);
+        const hrefs = htmls.flatMap(extractHrefs);
+        const planned = planLinks(hrefs, origin, allowLocal);
+        report.links = await checkPlanned(planned, (url, init) => fetch(url, init));
+        report.institutional = await checkInstitutional(
+          origin,
+          INSTITUTIONAL_SLUGS,
+          (url, init) => fetch(url, init),
+          allowLocal,
+        );
+      } catch (err) {
+        failed = true;
+        report.error = `${report.error ? `${report.error}; ` : ""}report checks: ${String(err)}`;
+      }
+    }
+
     report.figma = figmaSkip();
     report.auth = authSkip();
     report.pages = pages;
     report.visual = visuals;
     report.isolation = { hostedFetch: false, methods: "GET", figmaFaked: false, payment: false };
     report.detects_everything = false;
+    try {
+      await closeServer(hosted?.server);
+    } catch (err) {
+      failed = true;
+      report.error = `${report.error ? `${report.error}; ` : ""}fixture cleanup: ${String(err)}`;
+    }
+
     const done = finalizeReport(report);
-    fs.writeFileSync(path.join(OUT, "report.json"), JSON.stringify(done, null, 2));
-    fs.writeFileSync(path.join(OUT, "report.html"), renderHtml(done));
-    await browser.close();
-    hosted?.server.close();
+    try {
+      fs.mkdirSync(OUT, { recursive: true });
+      fs.writeFileSync(path.join(OUT, "report.json"), JSON.stringify(done, null, 2));
+      fs.writeFileSync(path.join(OUT, "report.html"), renderHtml(done));
+    } catch (err) {
+      failed = true;
+      report.error = `${report.error ? `${report.error}; ` : ""}report write: ${String(err)}`;
+      console.error("RONDA FAIL", report.error);
+    }
+
     if (failed || !isPassing(done)) {
       console.error("RONDA FAIL", done.error || "jornada incompleta");
-      process.exit(1);
+      process.exitCode = 1;
+      return;
     }
     const broken = done.links.filter((l) => l.verdict === "broken").length;
     console.log(
@@ -268,5 +312,5 @@ async function main(): Promise<void> {
 
 main().catch((err) => {
   console.error("RONDA FAIL", err);
-  process.exit(1);
+  process.exitCode = 1;
 });

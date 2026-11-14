@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { defaultJourney, parseJourneyFile } from "./journey";
+import { isBuiltInFixtureJourney } from "./fixture-click";
 
 describe("parseJourneyFile", () => {
   it("aceita o journey.json do fixture demo", () => {
@@ -53,6 +54,22 @@ describe("parseJourneyFile", () => {
     expect(parsed.ok).toBe(true);
     if (!parsed.ok) return;
     expect(parsed.journey.steps).toHaveLength(2);
+  });
+
+  it("não executa CTA configurado fora da sequência validada do fixture", () => {
+    const parsed = parseJourneyFile({
+      steps: [
+        { id: "home", heading: "Home", click: "Abrir carrinho", clickRole: "button" },
+        { id: "checkout", heading: "Checkout", stop: true },
+      ],
+    });
+    expect(parsed.ok).toBe(true);
+    if (parsed.ok) {
+      expect(parsed.journey.steps.map((step) => step.clickRole)).toEqual(["button", undefined]);
+      expect(isBuiltInFixtureJourney(parsed.journey)).toBe(false);
+    }
+    expect(parseJourneyFile({ steps: [{ id: "home", heading: "Home", click: "Comprar", clickRole: "form", stop: true }] }).ok).toBe(false);
+    expect(parseJourneyFile({ steps: [{ id: "home", heading: "Home", clickRole: "button", stop: true }] }).ok).toBe(false);
   });
 
   it("só aceita stop único na última etapa", () => {

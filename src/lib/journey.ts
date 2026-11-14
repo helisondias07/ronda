@@ -73,15 +73,26 @@ export function parseJourneyFile(raw: unknown, source = "journey.json"): Journey
     if (seenIds.has(id.toLowerCase())) return { ok: false, message: `jornada: id duplicado (${id})` };
     seenIds.add(id.toLowerCase());
     if (FORBIDDEN_ID.test(id)) return { ok: false, message: `jornada: id proibido (${id})` };
+    if (step.click !== undefined && typeof step.click !== "string") {
+      return { ok: false, message: "jornada: click precisa ser texto" };
+    }
     const click = typeof step.click === "string" ? step.click.trim() : undefined;
     if (click && click.length > 200) return { ok: false, message: "jornada: rótulo de clique tem limite de 200 caracteres" };
     if (click && FORBIDDEN_CLICK.test(click)) {
       return { ok: false, message: `jornada: clique proibido (${click})` };
     }
+    const clickRole = step.clickRole === undefined ? "link" : step.clickRole;
+    if (clickRole !== "link" && clickRole !== "button") {
+      return { ok: false, message: "jornada: clickRole precisa ser link ou button" };
+    }
+    if (step.clickRole !== undefined && !click) {
+      return { ok: false, message: "jornada: clickRole exige um rótulo click" };
+    }
     steps.push({
       id: id as JourneyStep["id"],
       heading,
       click: click || undefined,
+      clickRole: click ? clickRole : undefined,
       stop: Boolean(step.stop),
     });
   }
