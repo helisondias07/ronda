@@ -19,6 +19,11 @@ describe("report", () => {
       target: "fixture",
       stopped_before_payment: true,
       consoleErrors: [],
+      detects_everything: false,
+      links: [],
+      institutional: [],
+      figma: { available: false, reason: "teste" },
+      auth: { available: false, reason: "teste" },
       steps: [
         step({ id: "home" }),
         step({ id: "categoria" }),
@@ -37,6 +42,11 @@ describe("report", () => {
       target: "fixture",
       stopped_before_payment: false,
       consoleErrors: [],
+      detects_everything: false,
+      links: [],
+      institutional: [],
+      figma: { available: false, reason: "teste" },
+      auth: { available: false, reason: "teste" },
       steps: [
         step({
           id: "produto",
@@ -58,6 +68,11 @@ describe("report", () => {
       target: "fixture",
       stopped_before_payment: true,
       consoleErrors: [],
+      detects_everything: false,
+      links: [],
+      institutional: [],
+      figma: { available: false, reason: "sem Figma neste teste" },
+      auth: { available: false, reason: "sem login neste teste" },
       steps: [step({ id: "checkout", screenshot: "out/checkout.png" })],
     });
     expect(html).toMatch(/parado antes do pagamento/);

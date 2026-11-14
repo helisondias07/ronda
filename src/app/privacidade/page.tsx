@@ -15,6 +15,11 @@ export default function PrivacidadePage() {
               cliente.
             </li>
             <li>Não use a Ronda contra produção de cliente sem autorização escrita do ambiente.</li>
+            <li>
+              O site publicado não faz fetch de URL (isolamento). O CLI, no seu PC, só faz GET no origin
+              autorizado; IP privado, metadata e credenciais na URL são recusados.
+            </li>
+            <li>Teto: 30 páginas, 80 links, 8 segundos, método GET. Sem POST/PUT/DELETE.</li>
           </ul>
           <p>
             <a href="/">Voltar</a>

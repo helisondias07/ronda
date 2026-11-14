@@ -13,6 +13,9 @@ import { detectScribanError } from "../lib/scriban";
 import { filterConsole } from "../lib/console-filter";
 import { finalizeReport, isPassing, renderHtml } from "../lib/report";
 import { FIXTURE_JOURNEY } from "../lib/wake";
+import { checkInstitutional, checkPlanned, extractHrefs, planLinks } from "../lib/scan";
+import { INSTITUTIONAL_SLUGS, LIMITS } from "../lib/limits";
+import { authSkip, figmaSkip } from "../lib/gaps";
 import type { Report, StepResult } from "../lib/types";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -75,7 +78,14 @@ async function main(): Promise<void> {
     steps: [],
     stopped_before_payment: false,
     consoleErrors: [],
+    detects_everything: false,
+    links: [],
+    institutional: [],
+    figma: figmaSkip(),
+    auth: authSkip(),
   };
+  const htmls: string[] = [];
+  const allowLocal = true;
 
   const hosted = target.kind === "fixture" ? await serveFixture() : null;
   const origin = target.kind === "fixture" ? hosted!.origin : target.url;
@@ -100,7 +110,9 @@ async function main(): Promise<void> {
       if (step.click) {
         await page.getByRole("link", { name: step.click, exact: true }).click();
       }
-      const scriban = detectScribanError(await page.content());
+      const html = await page.content();
+      htmls.push(html);
+      const scriban = detectScribanError(html);
       if (!scriban.ok) throw new Error(`Scriban: ${scriban.message}`);
       const headingName = step.id === "categoria" ? { name: "Tênis", exact: true } : { name: step.heading };
       await page.getByRole("heading", headingName).waitFor({ state: "visible", timeout: 5000 });
@@ -136,6 +148,18 @@ async function main(): Promise<void> {
     });
   } finally {
     report.consoleErrors = filterConsole(rawConsole, new URL(origin).hostname);
+    const hrefs = htmls.flatMap(extractHrefs);
+    const planned = planLinks(hrefs, origin, allowLocal);
+    report.links = await checkPlanned(planned, (url, init) => fetch(url, init));
+    report.institutional = await checkInstitutional(
+      origin,
+      INSTITUTIONAL_SLUGS,
+      (url, init) => fetch(url, init),
+      allowLocal,
+    );
+    report.figma = figmaSkip();
+    report.auth = authSkip();
+    report.detects_everything = false;
     const done = finalizeReport(report);
     fs.writeFileSync(path.join(OUT, "report.json"), JSON.stringify(done, null, 2));
     fs.writeFileSync(path.join(OUT, "report.html"), renderHtml(done));
@@ -145,7 +169,12 @@ async function main(): Promise<void> {
       console.error("RONDA FAIL", done.error || "jornada incompleta");
       process.exit(1);
     }
-    console.log("RONDA OK 5/5 stopped_before_payment", OUT);
+    const broken = done.links.filter((l) => l.verdict === "broken").length;
+    console.log(
+      "RONDA OK 5/5 stopped_before_payment",
+      `links=${done.links.length} broken=${broken} max=${LIMITS.maxLinks}`,
+      OUT,
+    );
   }
 }
 

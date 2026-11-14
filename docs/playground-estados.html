@@ -105,6 +105,37 @@ Call log:
       <div class="bar"><strong>URL remota</strong><span class="pill bad">bloqueado</span></div>
       <p>Sem <code>--autorizo-este-ambiente</code> a Ronda só corre o fixture local. Produção de cliente e pedido real ficam de fora.</p>
     </article>
+    <article>
+      <h2>10. Links (fixture)</h2>
+      <div class="bar"><strong>6 hrefs</strong><span class="pill ok">GET same-origin</span></div>
+      <ol>
+        <li>sobre.html — 200</li>
+        <li>politica.html — 200</li>
+        <li>pagina-ausente.html — 404 (relatado, não corrigido)</li>
+        <li>mailto: — ignorado</li>
+        <li>example.com — externo, não buscado</li>
+      </ol>
+    </article>
+    <article>
+      <h2>11. SSRF recusado</h2>
+      <div class="bar"><strong>169.254.169.254</strong><span class="pill bad">skipped-ssrf</span></div>
+      <p>O visor na nuvem <strong>não busca URL</strong>. O CLI só faz GET no origin autorizado; IP privado, metadata e credencial na URL são bloqueados. Redirect para 10.x também.</p>
+    </article>
+    <article>
+      <h2>12. Figma (não fingido)</h2>
+      <div class="bar"><strong>visual-review</strong><span class="pill stop">indisponível</span></div>
+      <p>Sem token nem spec no disco. Não desenhamos um diff falso. O gate de pixel continua no Oasis, outro fluxo.</p>
+    </article>
+    <article>
+      <h2>13. Login (não fingido)</h2>
+      <div class="bar"><strong>conta de teste</strong><span class="pill stop">indisponível</span></div>
+      <p>Sem Vault. Não criamos cadastro, não preenchemos senha, não passamos de CAPTCHA/SMS.</p>
+    </article>
+    <article>
+      <h2>14. Institucionais</h2>
+      <div class="bar"><strong>allowlist</strong><span class="pill ok">2 páginas</span></div>
+      <p>Quem somos e Política no fixture. CMS de cliente não entra. Teto: 30 páginas, 80 links, 8s, só GET.</p>
+    </article>
   </main>
 </body>
 </html>

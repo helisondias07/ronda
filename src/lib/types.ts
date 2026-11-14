@@ -16,6 +16,34 @@ export type Suggestion = {
   apply: false;
 };
 
+export type Skip = {
+  available: false;
+  reason: string;
+};
+
+export type LinkVerdict =
+  | "ok"
+  | "broken"
+  | "skipped-external"
+  | "skipped-ssrf"
+  | "skipped-mailto"
+  | "skipped-script"
+  | "skipped-hash"
+  | "limited";
+
+export type LinkCheck = {
+  href: string;
+  status?: number;
+  verdict: LinkVerdict;
+};
+
+export type InstitutionalPage = {
+  slug: string;
+  status?: number;
+  pass: boolean;
+  error?: string;
+};
+
 export type Report = {
   store: string;
   platform: "wake-mock" | "wake";
@@ -24,6 +52,11 @@ export type Report = {
   stopped_before_payment: boolean;
   consoleErrors: string[];
   error?: string;
+  detects_everything: false;
+  links: LinkCheck[];
+  institutional: InstitutionalPage[];
+  figma: Skip;
+  auth: Skip;
 };
 
 export type Target =

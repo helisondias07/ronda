@@ -10,6 +10,22 @@ const EXAMPLE: Report = {
   target: "fixture",
   stopped_before_payment: true,
   consoleErrors: [],
+  detects_everything: false,
+  links: [
+    { href: "http://127.0.0.1/sobre.html", status: 200, verdict: "ok" },
+    { href: "http://127.0.0.1/pagina-ausente.html", status: 404, verdict: "broken" },
+    { href: "mailto:contato@demo-qa.example", verdict: "skipped-mailto" },
+    { href: "https://example.com", verdict: "skipped-external" },
+  ],
+  institutional: [
+    { slug: "sobre.html", status: 200, pass: true },
+    { slug: "politica.html", status: 200, pass: true },
+  ],
+  figma: { available: false, reason: "sem FIGMA_TOKEN nem spec local. Não fingimos comparação com Figma." },
+  auth: {
+    available: false,
+    reason: "sem conta de teste no Vault. A Ronda não cria cadastro, não preenche senha e não automatiza CAPTCHA/SMS/social.",
+  },
   steps: [
     { id: "home", url: "http://127.0.0.1/home.html", pass: true, stopped_before_payment: false, screenshot: "ronda-out/home.png" },
     { id: "categoria", url: "http://127.0.0.1/categoria.html", pass: true, stopped_before_payment: false, screenshot: "ronda-out/categoria.png" },
@@ -83,8 +99,9 @@ export function Viewer() {
             <li>Cole o JSON abaixo. Sugestão de correção vem no laudo; aplicar no tema é outro fluxo.</li>
           </ol>
           <p className="muted">
-            Sem OpenCode Go, sem chave de LLM, sem Admin Wake, sem pedido. Preview localhost só com{" "}
-            <code>--autorizo-este-ambiente</code>.
+            Sem OpenCode Go, sem chave de LLM, sem Admin Wake, sem pedido. Esta página <strong>não
+            busca URL</strong> (evita SSRF). Preview localhost só com{" "}
+            <code>--autorizo-este-ambiente</code>. Não detecta tudo.
           </p>
         </section>
 
@@ -154,6 +171,34 @@ export function Viewer() {
                 </li>
               ))}
             </ol>
+            {report.institutional?.length ? (
+              <>
+                <h2>Institucionais</h2>
+                <ol className="steps">
+                  {report.institutional.map((page) => (
+                    <li key={page.slug}>
+                      {page.slug} {page.pass ? "ok" : "falhou"} {page.status ? `(${page.status})` : ""}
+                    </li>
+                  ))}
+                </ol>
+              </>
+            ) : null}
+            {report.links?.length ? (
+              <>
+                <h2>Links (GET, same-origin)</h2>
+                <ol className="steps">
+                  {report.links.map((link) => (
+                    <li key={`${link.verdict}-${link.href}`}>
+                      {link.href} — {link.verdict}
+                      {link.status ? ` ${link.status}` : ""}
+                    </li>
+                  ))}
+                </ol>
+              </>
+            ) : null}
+            <p className="hyp">Figma: {report.figma?.reason}</p>
+            <p className="hyp">Login: {report.auth?.reason}</p>
+            <p className="muted">detects_everything: false. Sugestão ≠ correção.</p>
           </section>
         ) : null}
       </main>
