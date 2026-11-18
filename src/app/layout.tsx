@@ -1,30 +1,32 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
 import "./globals.css";
 
-const sans = IBM_Plex_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  variable: "--font-sans-loaded",
-  display: "swap",
-});
-const mono = IBM_Plex_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500"],
-  variable: "--font-mono-loaded",
-  display: "swap",
-});
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://ronda-tawny-xi.vercel.app";
 
 export const metadata: Metadata = {
-  title: "Ronda — laudo da jornada, sem pagar e sem patch",
+  metadataBase: new URL(SITE_URL),
+  robots: { index: true, follow: true },
+  title: {
+    default: "Ronda — Laudo de Jornada E-commerce para Agências e Lojas (Sem Pagar, Sem Patch)",
+    template: "%s · Ronda",
+  },
   description:
-    "Laudo da loja, com prova. A gente não mexe no site. Para antes de pagar. Não garante que detecta tudo.",
+    "Vistoria automatizada da jornada Home → Produto → Carrinho → Checkout para Wake (Fbits SSR), Nuvemshop, Shopify e VTEX. Para antes do pagamento, detecta erro 500 Scriban e não altera o site.",
+  openGraph: {
+    type: "website",
+    locale: "pt_BR",
+    url: SITE_URL,
+    siteName: "Ronda",
+    title: "Ronda — Laudo da jornada de compra, com prova. Sem alterar a loja.",
+    description:
+      "QA de jornada e-commerce com trava Safe-Checkout, proxy anti-SSRF e visor interativo de evidências para agências e operações.",
+  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="pt-BR" className={`${sans.variable} ${mono.variable}`}>
+    <html lang="pt-BR">
       <body>{children}</body>
     </html>
   );

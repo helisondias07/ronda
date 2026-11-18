@@ -1,88 +1,48 @@
 # Ronda
 
-Percorre **home → categoria → produto → carrinho → checkout**, olha **institucionais** e **links** same-origin, e emite um laudo. **Para antes de pagar.** **Não altera o site.** **Não garante que detecta tudo.**
+Percorre **Home → Categoria → Produto → Carrinho → Checkout**, audita **institucionais**, **links** same-origin, **console JS first-party** e **erro 500 Scriban camuflado em HTTP 200**, emitindo um laudo auditável com prints `SHA-256`. **Para antes de pagar (`stopped_before_payment: true`).** **Não altera o site (`apply: false`).**
 
-O site publicado só **mostra** um `report.json`. Ele **não busca URL** (isolamento contra SSRF). A ronda roda no seu computador.
+O site publicado apresenta a proposta técnica B2B e o **Visor Interativo (`/visor`)**, que lê arquivos `report.json` **100% no navegador** (zero rotas `/api`, zero SSRF).
 
-## O que funciona de verdade
+## O que funciona hoje
 
-| Função | Como |
+| Frente | Implementação verificada |
 |---|---|
-| Fixture Demo QA | `npm run ronda` — sequência fixa validada (5 etapas); cliques só nos quatro controles e destinos revisados do fixture. JSON de jornada customizado é recusado; laudo registra `stopped_before_payment`, print+sha256, h1/título |
-| Procedência do laudo | JSON/HTML traz UUID da execução, início/fim UTC e duração; não inclui dados do host nem habilita alvo remoto |
-| PNG de referência | `--ref-png` + `--ref-step` + `--viewport 1280x720` no PC; diff em `ronda-out/report.html` (`<img src="diff-….png">`). O visor Hobby **não** lê disco. **Não é Figma.** |
-| Institucionais | allowlist `sobre.html`, `politica.html` |
-| Links / botões com href | GET same-origin, teto 80, timeout 8s; mailto/externo/script ignorados |
-| Console | só `pageerror` / `console.error` first-party |
-| 500 Scriban | JSON `status_code: 500` = falha, mesmo com HTTP 200 |
-| Checagem HTML básica | Título, h1, `alt` de imagem e rótulo de controle; heurística parcial, não auditoria WCAG |
-| Alvo local | somente fixture controlado. `--base-url` está desativado porque GET também pode ter efeitos; nenhum site externo ou preview é aceito. |
-| Sugestão | hipótese no laudo com `apply: false` |
-| Visor | cola JSON; exemplo é o fixture, rotulado |
+| Fixture Demo QA | `npm run ronda` — sequência determinística de 5 etapas com `fixtureSha256` sobre os 9 arquivos do fixture e `stopped_before_payment: true` |
+| Manifesto Autorizado (`StoreTargetManifest`) | `src/lib/store-manifest.ts` — valida `primaryOrigin` HTTPS, subdomínios/CDNs permitidos, autorização explícita e bloqueia domínios de pagamento |
+| Proxy Anti-SSRF com DNS/IP Pinning | `src/lib/pinned-proxy.ts` — resolve DNS uma vez, bloqueia IPs privados/loopback/CGNAT/link-local/IMDS/IPv6 mapeado e DNS Rebinding, pinando o IP público validado no socket |
+| Adaptadores Safe-Checkout (Wake & Nuvemshop) | Permite vitrine/PDP/carrinho/frete, bloqueia `checkoutComplete`, `/checkout/v3/*` POST, `/checkout/v3/success/`, iframes de cartão e botões de finalizar compra + limpa o carrinho no *teardown* |
+| GitHub Actions Agendado (R$ 0) | `docs/ronda-github-action-template.yml` + `docs/store-manifest.example.json` — execução em VM Ubuntu efêmera a cada 30 min com reteste automático em 30s |
+| Visor Interativo + Landing B2B | `/` e `/visor` — 2 demos reais em 1 clique sem login (falha Scriban 500 Wake + ronda 5/5 aprovada), upload local até 5 MB, planos transparentes e indexação SEO pública |
 
-## O que não faz (de propósito)
+## O que a Ronda nunca faz (por contrato)
 
-- Pedido, cartão, 3DS, `checkoutComplete`, PATCH/POST destrutivo
-- Patch em tema, Admin, FTP, preço/estoque/frete
-- Loja de cliente em produção
-- Endpoint público de Playwright / crawl (o visor Hobby **não** tem `/api`)
-- **Figma:** sem token/spec não comparamos; não desenhamos diff falso (use `visual-review` no Oasis)
-- **Login:** sem conta no Vault não autenticamos; não criamos cadastro
-- SaaS com OpenCode Go / chave GLM pessoal
-- Buscar URL a partir deste site na Vercel
+- Pedido concluído, preenchimento de cartão, 3DS ou `checkoutComplete`
+- Patch em tema (`apply: false`), acesso a Admin ou FTP
+- Endpoint público de Playwright / crawl na aplicação web (`src/app/api` permanece vazio e verificado por `isolation.test.ts`)
+- Cobrança online dentro da instância Vercel Hobby ([Termos §4](https://vercel.com/legal/terms))
 
-Playground visual: `/playground-estados.html` no site publicado (cópia em `public/`; fonte em `docs/`).
-
-Próximos limites: `docs/plano-evolucao-qa.md` — Figma via `visual-review`, eventual sandbox de rede isolado antes de avaliar preview. Sem loja de cliente neste Hobby.
-
-## Rodar
+## Comandos principais
 
 ```bash
 npm install
 npx playwright install chromium
+npx tsc --noEmit
 npm test
+npm run sandbox:poc
 npm run ronda
-npm run ronda -- --journey fixture/journey.json
-npm run dev
+npm run build
 ```
 
-`--base-url` é recusado, inclusive para loopback, porque não há isolamento suficiente para GET com efeitos. PNG local continua disponível com `--viewport 1280x720 --ref-png caminho/home.png --ref-step home` no fixture.
+Execução autorizada com manifesto assinado + proxy DNS/IP pinado:
 
-O visor Hobby **não** recebe o PNG. Diff fica em `ronda-out/diff-*.png`.
+```bash
+npx tsx src/cli/run.ts --manifest docs/store-manifest.example.json --base-url https://www.lojaexemplo.com.br
+```
 
-## Isolamento do scanner
+Sem `--manifest` válido, `--base-url` permanece recusado por segurança.
 
-- Processo da jornada: Playwright local. Processo do visor: Next.js sem `fetch` de alvo.
-- Só GET. Sem `file:`, `gopher:`, credencial na URL.
-- CLI executa apenas no fixture controlado. `--base-url` está desativado; cliques precisam corresponder à sequência validada de origem, rótulo, papel e destino.
-- Teto: 30 páginas, 80 links, 2 redirects, 8s.
-- A política foi exercitada no fixture e com fetch injetado; não houve teste real de interceptação da rede do Chromium nem DNS rebinding.
+## Licenças e Privacidade
 
-## Deploy (sem cobrar)
-
-1. GitHub: este repositório (`main`).
-2. Vercel Hobby, framework Next.js, **sem** domínio pago. Preview por PR. Rollback = Promote do deployment anterior.
-3. Feature implícita: visor **não** liga varredura remota.
-4. Hobby = **pessoal ou não comercial** ([Termos §4](https://vercel.com/legal/terms), 14/11/2026). **Não cobrar** neste deploy. Migração para Pro **só** se houver pagamento — **não contratar agora**.
-
-Não ligar cobrança nem ads até revisão.
-
-## Preço (hipótese, não oferta)
-
-Custo variável do MVP local: US$ 0 (Playwright OSS). Checkly Starter / Tracefox pago não cabem no teto de R$ 200 juntos. **Hipótese a testar** (não oferta): avulso R$ 99 pelo relatório **sem** patch; ads R$ 0 até 2 pagamentos. Marca/domínio não conferidos. Sem WTP medido.
-
-## Lacunas
-
-- Sem demo Awake / preview `fbits.storefront` neste repo (só fixture).
-- Sem Figma e sem jornada autenticada.
-- Checagem de acessibilidade limitada ao HTML capturado; não valida WCAG, teclado ou leitor de tela.
-- Sem adapter Nuvemshop. Chromium ≠ Safari real.
-- `npm audit` pode listar vulns de transitivos; não forçamos `--force`.
-
-## Licenças
-
-- Código: MIT. Playwright: Apache-2.0. Fixture fictício, sem dado de cliente.
-
-## Privacidade
-
-`/privacidade`. Não versionar print de loja real.
+- Código: MIT. Playwright: Apache-2.0.
+- Política LGPD pública em `/privacidade`. Nunca versionar capturas de lojas de clientes neste repositório.
