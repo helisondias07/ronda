@@ -42,7 +42,7 @@ describe("fixture-only journey execution", () => {
       id: "carrinho", heading: "Carrinho", click: "Adicionar ao carrinho", clickRole: "button",
     }, "authorized-local", "/produto.html")).rejects.toThrow(/bloqueado/);
 
-    expect(await page.evaluate(() => (window as Window & { clicked: boolean }).clicked)).toBe(false);
+    expect(await page.evaluate(() => (window as unknown as { clicked: boolean }).clicked)).toBe(false);
     await page.close();
   });
 });

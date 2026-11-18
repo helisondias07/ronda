@@ -13,7 +13,9 @@ jobs:
           node-version: "22"
           cache: npm
       - run: npm ci
+      - run: npx tsc --noEmit
       - run: npm test
       - run: npx playwright install --with-deps chromium
+      - run: npm run sandbox:poc
       - run: npm run ronda
       - run: npm run build

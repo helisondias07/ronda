@@ -13,7 +13,7 @@ Acesso 14/11/2026. **Não é oferta e não está implementado.** O visor publica
 
 ## Limites de verificacao de rede
 
-O CLI foi executado contra o fixture. Testes com Playwright verificam que controles perigosos configurados são recusados sem disparar handlers; não houve interceptação de rede real nem simulação de DNS rebinding. `--base-url` permanece desativado; não afirmamos isolamento de rede geral.
+O CLI foi executado contra o fixture. O laudo inclui SHA-256 determinístico do conjunto de 9 arquivos usados pela demo, permitindo conferir se o fixture mudou entre execuções; isso não atesta isolamento de rede nem integridade do processo. Testes com Playwright verificam que controles perigosos configurados são recusados sem disparar handlers; não houve interceptação de rede real nem simulação de DNS rebinding. `--base-url` permanece desativado; não afirmamos isolamento de rede geral.
 
 Proposta de sandbox futuro e portão adversarial detalhado: `docs/arquitetura-sandbox-futuro.md`. Nada dessa proposta habilita URL externa.
 

@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ronda — importar laudo (estados)</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f2eee6;color:#232824;font:16px/1.5 system-ui,sans-serif}main{max-width:980px;margin:auto;padding:32px 20px}h1{font:600 clamp(2rem,5vw,3.4rem)/1.05 Georgia,serif;margin:.25em 0}h2{font:600 1.15rem Georgia,serif;margin:0 0 12px}.intro{max-width:680px;color:#59615b}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:14px;margin-top:24px}.card{background:#fffdf8;border:1px solid #d9d5ca;border-radius:12px;padding:20px;min-width:0}.tag{font-size:.75rem;text-transform:uppercase;letter-spacing:.09em;color:#536a57;font-weight:700}.pick{display:block;margin:14px 0;padding:14px;border:1px dashed #89958b;border-radius:8px;background:#f8f7f1}button{border:0;border-radius:6px;background:#253d30;color:white;padding:10px 14px;font:inherit}button:disabled{opacity:.48}small,.muted{color:#616962}code{overflow-wrap:anywhere}.error{color:#8d3027}.ok{color:#24583a}ul{padding-left:20px;margin-bottom:0}
+</style>
+<main><p class="tag">Estados do fluxo · dados fictícios</p><h1>Abra o laudo da Ronda</h1><p class="intro">Escolha o <code>report.json</code> gerado localmente. O arquivo é lido neste navegador; nenhum site é acessado. A caixa de texto existente continua disponível como alternativa.</p>
+<div class="grid">
+<section class="card"><p class="tag">Vazio</p><h2>Nenhum arquivo escolhido</h2><label class="pick">Selecionar laudo JSON<br><input type="file" accept="application/json,.json"></label><button disabled>Abrir laudo</button><p class="muted">Selecione um arquivo para continuar.</p></section>
+<section class="card"><p class="tag">Carregando</p><h2>Lendo arquivo local…</h2><label class="pick"><input type="file" disabled> laudo-demo.json</label><button disabled>Lendo…</button><p role="status">Aguarde a validação do JSON.</p></section>
+<section class="card"><p class="tag">Erro de formato</p><h2 class="error">Este arquivo não é um laudo válido</h2><p>O conteúdo não corresponde ao formato esperado pela Ronda.</p><button>Tentar outro arquivo</button><p class="muted">O laudo anterior, se houver, continua visível.</p></section>
+<section class="card"><p class="tag">Sucesso</p><h2 class="ok">Laudo pronto para leitura</h2><p><strong>fixture-demo-qa</strong> · jornada fictícia · 5 etapas</p><ul><li>3 etapas passaram</li><li>1 etapa falhou</li><li>parou antes do pagamento</li></ul><p class="muted">Exemplo ilustrativo; não representa uma loja real.</p></section>
+<section class="card"><p class="tag">Borda · arquivo grande</p><h2>Arquivo acima do limite</h2><p class="error">O arquivo é maior que 5 MB. Gere ou selecione um laudo menor.</p><button>Tentar outro arquivo</button></section>
+<section class="card"><p class="tag">Mobile · 320 px</p><h2>Importação permanece acessível</h2><label class="pick">Selecionar laudo JSON<br><input type="file" accept="application/json,.json"></label><button>Abrir laudo</button><p class="muted">Sem largura mínima; texto longo quebra dentro do cartão.</p></section>
+</div><p class="muted">Proposta visual isolada. Ainda não implementada no visor.</p></main>
+</html>

@@ -7,6 +7,7 @@ const run = {
   startedAt: "2026-11-14T12:00:00.000Z",
   finishedAt: "2026-11-14T12:00:05.000Z",
   durationMs: 5000,
+  fixtureSha256: "a".repeat(64),
 };
 
 describe("procedência local da execução", () => {
@@ -28,6 +29,13 @@ describe("procedência local da execução", () => {
     if (parsed.ok) expect(parsed.report.run).toBeUndefined();
   });
 
+  it("preserves valid fixture fingerprints and ignores malformed values", () => {
+    const valid = parseReport(JSON.stringify({ run, steps: [{ id: "home", pass: true, stopped_before_payment: false }] }));
+    expect(valid.ok && valid.report.run?.fixtureSha256).toBe(run.fixtureSha256);
+    const invalid = parseReport(JSON.stringify({ run: { ...run, fixtureSha256: "../secret" }, steps: [{ id: "home", pass: true, stopped_before_payment: false }] }));
+    expect(invalid.ok && invalid.report.run?.fixtureSha256).toBeUndefined();
+  });
+
   it("shows only the run id, UTC times, and duration in generated HTML", () => {
     const html = renderHtml({
       store: "fixture-demo-qa",
@@ -47,5 +55,6 @@ describe("procedência local da execução", () => {
     expect(html).toContain(`${run.startedAt} UTC`);
     expect(html).toContain(`${run.finishedAt} UTC`);
     expect(html).toContain("5000 ms");
+    expect(html).toContain(run.fixtureSha256);
   });
 });

@@ -32,6 +32,7 @@ async function main(): Promise<void> {
   let effectfulGets = 0;
   const blockedHttp: string[] = [];
   const blockedWebSockets: string[] = [];
+  const blockedRedirectSources: string[] = [];
   let context: BrowserContext | undefined;
   let browser: Awaited<ReturnType<typeof chromium.launch>> | undefined;
   let targetServer: Server | undefined;
@@ -50,7 +51,7 @@ async function main(): Promise<void> {
 
     targetServer = http.createServer((request, response) => {
       const pathname = new URL(request.url || "/", "http://127.0.0.1").pathname;
-      if (pathname === "/redirect") {
+      if (pathname === "/redirect" || pathname.startsWith("/redirect-sub/")) {
         response.writeHead(302, { Location: `${canaryOrigin}/not-found` }).end();
         return;
       }
@@ -64,15 +65,28 @@ async function main(): Promise<void> {
         response.writeHead(200).end("synthetic state changed through GET");
         return;
       }
+      if (pathname === "/worker.js") {
+        response.writeHead(200, { "content-type": "application/javascript" }).end(`
+          try { importScripts('${canaryOrigin}/worker-import'); } catch {}
+          fetch('${canaryOrigin}/worker-fetch').catch(() => {}).finally(() => postMessage('done'));
+        `);
+        return;
+      }
       const page = `<!doctype html><html><body>
         <img src="${canaryOrigin}/image">
         <iframe src="${canaryOrigin}/frame"></iframe>
+        <img src="/redirect-sub/image">
+        <iframe src="/redirect-sub/frame"></iframe>
+        <script src="/redirect-sub/script"></script>
         <script>
           window.pocDone = false;
           Promise.allSettled([
             fetch('${canaryOrigin}/fetch'),
             fetch('/write', { method: 'POST', body: 'synthetic' }),
             fetch('/effectful-get'),
+            fetch('/redirect-sub/fetch'),
+            new Promise((resolve) => { const worker = new Worker('/redirect-sub/worker'); worker.onerror = (event) => { event.preventDefault(); worker.terminate(); resolve('blocked'); }; worker.onmessage = () => { worker.terminate(); resolve('loaded'); }; }),
+            new Promise((resolve, reject) => { const worker = new Worker('/worker.js'); worker.onmessage = () => { worker.terminate(); resolve('done'); }; worker.onerror = () => { worker.terminate(); reject(new Error('worker failed')); }; }),
             new Promise((resolve) => { const image = new Image(); image.onload = () => resolve('loaded'); image.onerror = () => resolve('blocked'); image.src = '${canaryOrigin}/script-image'; })
           ]).then(() => { window.pocDone = true; });
           try { new WebSocket('ws://127.0.0.1:${new URL(canaryOrigin).port}/socket'); } catch {}
@@ -115,6 +129,7 @@ async function main(): Promise<void> {
       const response = await route.fetch({ maxRedirects: 0 });
       if (response.status() >= 300 && response.status() < 400) {
         const location = response.headers()["location"];
+        blockedRedirectSources.push(new URL(request.url()).pathname);
         blockedHttp.push(`REDIRECT ${location ? new URL(location, request.url()).href : request.url()}`);
         await route.fulfill({ status: 502, contentType: "text/plain", body: "redirect blocked by local POC" });
         return;
@@ -134,8 +149,13 @@ async function main(): Promise<void> {
     assert.ok(blockedHttp.some((item) => item.includes(`${canaryOrigin}/fetch`)), "external fetch was not blocked");
     assert.ok(blockedHttp.some((item) => item.includes(`${canaryOrigin}/image`)), "image subresource was not blocked");
     assert.ok(blockedHttp.some((item) => item.includes(`${canaryOrigin}/frame`)), "iframe subresource was not blocked");
+    assert.ok(blockedHttp.some((item) => item.includes(`${canaryOrigin}/worker-import`)), "worker import was not intercepted");
+    assert.ok(blockedHttp.some((item) => item.includes(`${canaryOrigin}/worker-fetch`)), "worker fetch was not intercepted");
     assert.ok(blockedHttp.some((item) => item.startsWith("POST ")), "same-origin POST was not blocked");
     assert.ok(blockedWebSockets.some((url) => url.includes("/socket")), "WebSocket was not blocked");
+    for (const path of ["/redirect-sub/image", "/redirect-sub/frame", "/redirect-sub/script", "/redirect-sub/fetch", "/redirect-sub/worker"]) {
+      assert.ok(blockedRedirectSources.includes(path), `redirecting subresource not intercepted: ${path}`);
+    }
 
     await page.goto(`${targetOrigin}/redirect`, { waitUntil: "domcontentloaded" }).catch(() => undefined);
     await page.waitForTimeout(100);
@@ -145,7 +165,7 @@ async function main(): Promise<void> {
     assert.equal(receivedPosts, 0, "target received a blocked POST");
     assert.equal(effectfulGets, 1, "the synthetic same-origin GET side effect did not occur");
 
-    console.log(`POC OK: local allow ${targetOrigin}; blocked HTTP=${blockedHttp.length}; blocked WS=${blockedWebSockets.length}; canary HTTP/WS=0; POST received=0; synthetic GET side effect=${effectfulGets}`);
+    console.log(`POC OK: local allow ${targetOrigin}; blocked HTTP=${blockedHttp.length}; blocked WS=${blockedWebSockets.length}; redirected subresources=5; canary HTTP/WS=0; POST received=0; synthetic GET side effect=${effectfulGets}`);
   } finally {
     await context?.close().catch(() => undefined);
     await closeBrowser(browser).catch(() => undefined);
