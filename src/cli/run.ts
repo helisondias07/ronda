@@ -1,5 +1,5 @@
 /**
- * Ronda CLI:
+ * CheckoutGuard CLI (repo slug `ronda`):
  * - Modo padrão: jornada home→checkout no fixture controlado.
  * - Modo autorizado (--manifest <json> --base-url <https://...>): proxy anti-SSRF com IP pinado + Safe-Checkout (Wake/Nuvemshop).
  * Nunca preenche cartão, nunca chama checkoutComplete, nunca grava tema.
@@ -163,7 +163,7 @@ async function runAuthorizedManifestMode(manifest: StoreTargetManifest, viewport
     context = await browser.newContext({
       viewport,
       serviceWorkers: "block",
-      userAgent: "RondaQA/1.0 (+https://ronda-tawny-xi.vercel.app; safe-checkout)",
+      userAgent: "CheckoutGuard/1.0 (+https://ronda-tawny-xi.vercel.app; safe-checkout)",
     });
     await installSafeCheckoutGuard(context, manifest);
     page = await context.newPage();
@@ -371,13 +371,13 @@ async function main(): Promise<void> {
     await page.goto(`${origin}${journey.startPath}`, { waitUntil: "domcontentloaded" });
     for (const step of journey.steps) {
       if (isPaymentCompletePath(new URL(page.url()).pathname)) {
-        throw new Error("política: a Ronda não abre confirmação de pedido");
+        throw new Error("política: o CheckoutGuard não abre confirmação de pedido");
       }
       if (step.click) {
         await clickFixtureAction(page, step, target.kind, new URL(page.url()).pathname);
       }
       if (isPaymentCompletePath(new URL(page.url()).pathname)) {
-        throw new Error("política: a Ronda bloqueia confirmação de pedido");
+        throw new Error("política: o CheckoutGuard bloqueia confirmação de pedido");
       }
       const html = await page.content();
       htmls.push(html);

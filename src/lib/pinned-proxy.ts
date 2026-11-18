@@ -102,7 +102,7 @@ export function startPinnedEgressProxy(opts: {
       if (!opts.allowHttpForTest) {
         events.push({ method: req.method || "GET", target: rawUrl, allowed: false, reason: "https-connect-only" });
         res.writeHead(403, { "content-type": "text/plain; charset=utf-8" });
-        res.end("Ronda proxy: plain HTTP forbidden; use HTTPS CONNECT.");
+        res.end("CheckoutGuard proxy: plain HTTP forbidden; use HTTPS CONNECT.");
         return;
       }
 
@@ -168,7 +168,7 @@ export function startPinnedEgressProxy(opts: {
           if (status >= 300 && status < 400) {
             events.push({ method: "REDIRECT", target: upRes.headers.location || rawUrl, allowed: false, reason: "redirect-blocked" });
             res.writeHead(502, { "content-type": "text/plain; charset=utf-8" });
-            res.end("Redirect blocked by Ronda pinned proxy");
+            res.end("Redirect blocked by CheckoutGuard pinned proxy");
             upRes.resume();
             return;
           }
@@ -199,7 +199,7 @@ export function startPinnedEgressProxy(opts: {
       const pin = await resolveAndPinPublicIp(hostname, opts.manifest, resolver);
       if (!pin.ok) {
         events.push({ method: "CONNECT", target: authority, allowed: false, reason: pin.reason });
-        clientSocket.write(`HTTP/1.1 403 Forbidden\r\nX-Ronda-Block: ${pin.reason}\r\nConnection: close\r\n\r\n`);
+        clientSocket.write(`HTTP/1.1 403 Forbidden\r\nX-CheckoutGuard-Block: ${pin.reason}\r\nConnection: close\r\n\r\n`);
         clientSocket.destroy();
         return;
       }

@@ -48,7 +48,7 @@ export function parseJourneyFile(raw: unknown, source = "journey.json"): Journey
   const rec = asRecord(raw);
   if (!rec) return { ok: false, message: "jornada: JSON deve ser um objeto" };
   if (rec.stopBeforePayment === false) {
-    return { ok: false, message: "jornada: stopBeforePayment não pode ser false (a Ronda para antes de pagar)" };
+    return { ok: false, message: "jornada: stopBeforePayment não pode ser false (o CheckoutGuard para antes de pagar)" };
   }
   const startPath = safeStartPath(rec.startPath);
   if (!startPath) {

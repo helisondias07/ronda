@@ -3,7 +3,7 @@ export default function NotFound() {
     <>
       <header className="capa">
         <h1>Página não encontrada</h1>
-        <p>Esse endereço não existe neste visor. Não é um laudo de loja.</p>
+        <p>Esse endereço não existe neste site do CheckoutGuard. Não é um laudo de loja.</p>
       </header>
       <main>
         <section className="slip">

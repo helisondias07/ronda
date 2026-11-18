@@ -8,19 +8,19 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   robots: { index: true, follow: true },
   title: {
-    default: "Ronda — Laudo de Jornada E-commerce para Agências e Lojas (Sem Pagar, Sem Patch)",
-    template: "%s · Ronda",
+    default: "CheckoutGuard — Monitoramento Inteligente de Jornada & Checkout para E-commerce",
+    template: "%s · CheckoutGuard",
   },
   description:
-    "Vistoria automatizada da jornada Home → Produto → Carrinho → Checkout para Wake (Fbits SSR), Nuvemshop, Shopify e VTEX. Para antes do pagamento, detecta erro 500 Scriban e não altera o site.",
+    "Você paga caro por tráfego no Meta Ads? O CheckoutGuard percorre Home → Produto → Frete CEP → Checkout em Wake (Fbits SSR), Nuvemshop, Shopify e VTEX, detecta erro 500 Scriban camuflado em HTTP 200 e avisa no WhatsApp em ~30s — parando sempre antes do pagamento.",
   openGraph: {
     type: "website",
     locale: "pt_BR",
     url: SITE_URL,
-    siteName: "Ronda",
-    title: "Ronda — Laudo da jornada de compra, com prova. Sem alterar a loja.",
+    siteName: "CheckoutGuard",
+    title: "CheckoutGuard — Descubra em 30s se o seu checkout está quebrando antes de perder vendas.",
     description:
-      "QA de jornada e-commerce com trava Safe-Checkout, proxy anti-SSRF e visor interativo de evidências para agências e operações.",
+      "Monitoramento inteligente de jornada e checkout para e-commerce brasileiro: trava Safe-Checkout sem pedido fantasma, proxy anti-SSRF e laudo auditável para agências e lojas.",
   },
 };
 

@@ -27,10 +27,10 @@ export function assertNotPaid(input: {
   mutations: string[];
 }): void {
   if (isPaymentCompletePath(input.pathname)) {
-    throw new Error("política: caminho de pedido concluído — a Ronda para antes de pagar");
+    throw new Error("política: caminho de pedido concluído — o CheckoutGuard para antes de pagar");
   }
   if (input.cardValue.trim()) {
-    throw new Error("política: campo de cartão foi preenchido — a Ronda não paga");
+    throw new Error("política: campo de cartão foi preenchido — o CheckoutGuard não paga");
   }
   for (const name of input.mutations) {
     if (isForbiddenMutation(name)) {
@@ -41,6 +41,6 @@ export function assertNotPaid(input: {
 
 export function assertReportOnly(wroteThemeFile: boolean): void {
   if (wroteThemeFile) {
-    throw new Error("política: a Ronda só relata; não grava Pages/ nem Components/");
+    throw new Error("política: o CheckoutGuard só relata; não grava Pages/ nem Components/");
   }
 }

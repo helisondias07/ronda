@@ -1,8 +1,8 @@
 {
   "name": "ronda",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
-  "description": "Laudo da jornada de compra Wake: para antes de pagar e não altera a loja.",
+  "description": "CheckoutGuard — Monitoramento inteligente de jornada & checkout para e-commerce (repo slug historico ronda).",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

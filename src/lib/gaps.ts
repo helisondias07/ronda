@@ -7,7 +7,7 @@ export function figmaSkip(env: NodeJS.ProcessEnv = process.env): Skip {
     return {
       available: false,
       reason:
-        "há spec no disco, mas a Ronda não reimplementa o visual-review; rode o gate Oasis à parte. apply: false",
+        "há spec no disco, mas o CheckoutGuard não reimplementa o visual-review; rode o gate Oasis à parte. apply: false",
     };
   }
   return {
@@ -20,6 +20,6 @@ export function authSkip(): Skip {
   return {
     available: false,
     reason:
-      "sem conta de teste no Vault. A Ronda não cria cadastro, não preenche senha e não automatiza CAPTCHA/SMS/social.",
+      "sem conta de teste no Vault. O CheckoutGuard não cria cadastro, não preenche senha e não automatiza CAPTCHA/SMS/social.",
   };
 }

@@ -207,7 +207,7 @@ export function parseReport(raw: string): { ok: true; report: Report } | { ok: f
       auth: (data.auth as Report["auth"]) || {
         available: false,
         reason:
-          "sem conta de teste no Vault. A Ronda não cria cadastro, não preenche senha e não automatiza CAPTCHA/SMS/social.",
+          "sem conta de teste no Vault. O CheckoutGuard não cria cadastro, não preenche senha e não automatiza CAPTCHA/SMS/social.",
       },
       pages: Array.isArray(data.pages) ? data.pages.map(asPageFacts).filter((page): page is PageFacts => Boolean(page)) : [],
       visual: Array.isArray(data.visual) ? data.visual.map(asVisual) : [],

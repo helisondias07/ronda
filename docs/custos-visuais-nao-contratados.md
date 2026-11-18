@@ -1,6 +1,6 @@
 # Alternativas visuais — documentadas, não contratadas
 
-Acesso 14/11/2026. A Ronda compara **PNG local × PNG local** (pixelmatch ISC + pngjs MIT). Sem Figma, sem SaaS, R$ 0.
+Acesso 14/11/2026. O CheckoutGuard compara **PNG local × PNG local** (pixelmatch ISC + pngjs MIT). Sem Figma, sem SaaS, R$ 0.
 
 | Ferramenta | Preço publicado | Por que não agora |
 |---|---|---|

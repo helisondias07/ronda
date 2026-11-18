@@ -9,7 +9,7 @@ const FIGMA_GAP: Skip = {
 const AUTH_GAP: Skip = {
   available: false,
   reason:
-    "sem conta de teste no Vault. A Ronda não cria cadastro, não preenche senha e não automatiza CAPTCHA/SMS/social.",
+    "sem conta de teste no Vault. O CheckoutGuard não cria cadastro, não preenche senha e não automatiza CAPTCHA/SMS/social.",
 };
 
 export function finalizeReport(report: Report): Report {

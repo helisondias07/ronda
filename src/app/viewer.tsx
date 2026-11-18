@@ -18,7 +18,7 @@ function demoSvgDataUri(stepNum: string, title: string, verdict: string, tone: "
     <text x="54" y="141" fill="#FFFFFF" font-family="monospace" font-size="13">${verdict}</text>
     <line x1="44" y1="172" x2="592" y2="172" stroke="#E6E1D6" stroke-width="2"/>
     <text x="44" y="204" fill="#5A564E" font-family="monospace" font-size="13">${detail}</text>
-    <text x="44" y="308" fill="#5A564E" font-family="sans-serif" font-size="12">Ronda · captura demonstrativa offline (sem acesso a loja real neste visor)</text>
+    <text x="44" y="308" fill="#5A564E" font-family="sans-serif" font-size="12">CheckoutGuard · captura demonstrativa offline (sem acesso a loja real neste visor)</text>
   </svg>`;
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }
@@ -54,7 +54,7 @@ const DEMO_SCRIBAN_FAIL = {
   figma: { available: false, reason: "sem PNG exportado pelo cliente nesta demonstração. Não fingimos comparação com Figma." },
   auth: {
     available: false,
-    reason: "jornada visitante (guest checkout). A Ronda não cria cadastro, não preenche senha e não resolve CAPTCHA.",
+    reason: "jornada visitante (guest checkout). O CheckoutGuard não cria cadastro, não preenche senha e não resolve CAPTCHA.",
   },
   journey: {
     name: "fixture-demo-wake",
@@ -287,7 +287,7 @@ export function Viewer({ embedded = false, defaultDemo = "scriban" }: ViewerProp
             Demo 1: Falha Scriban 500 na PDP (Wake)
           </button>
           <button type="button" className="secondary" onClick={() => loadPreset(DEMO_PASSING)}>
-            Demo 2: Ronda 5/5 aprovada (Safe-Checkout)
+            Demo 2: ronda 5/5 aprovada (Safe-Checkout)
           </button>
         </div>
 
@@ -604,7 +604,7 @@ export function Viewer({ embedded = false, defaultDemo = "scriban" }: ViewerProp
       <header className="capa">
         <div className="capa-inner">
           <div className="topbar">
-            <span className="brand-stamp">RONDA · VISOR DE LAUDO LOCAL</span>
+            <span className="brand-stamp">CHECKOUTGUARD · VISOR DE LAUDO LOCAL</span>
             <nav className="topnav" aria-label="Navegação principal">
               <a href="/">Apresentação & Planos B2B</a>
               <a href="/visor" aria-current="page">
@@ -613,7 +613,7 @@ export function Viewer({ embedded = false, defaultDemo = "scriban" }: ViewerProp
               <a href="/privacidade">Privacidade (LGPD)</a>
             </nav>
           </div>
-          <h1>Visor de Laudo — Ronda</h1>
+          <h1>Visor de Laudo — CheckoutGuard</h1>
           <p>
             Laudo da loja, com prova. A gente não mexe no site e para antes de pagar. Este visor roda{" "}
             <strong>100% no seu navegador</strong>: inspecione as demonstrações abaixo em 1 clique ou abra um{" "}

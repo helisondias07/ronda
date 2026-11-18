@@ -1,8 +1,8 @@
-# Ronda
+# CheckoutGuard (repo slug `ronda`)
 
-Percorre **Home → Categoria → Produto → Carrinho → Checkout**, audita **institucionais**, **links** same-origin, **console JS first-party** e **erro 500 Scriban camuflado em HTTP 200**, emitindo um laudo auditável com prints `SHA-256`. **Para antes de pagar (`stopped_before_payment: true`).** **Não altera o site (`apply: false`).**
+**Monitoramento inteligente de jornada & checkout para e-commerce.** Percorre **Home → Categoria → Produto → Carrinho → Checkout**, audita **institucionais**, **links** same-origin, **console JS first-party** e **erro 500 Scriban camuflado em HTTP 200**, emitindo um laudo auditável com prints `SHA-256`. **Para antes de pagar (`stopped_before_payment: true`).** **Não altera o site (`apply: false`).**
 
-O site publicado apresenta a proposta técnica B2B e o **Visor Interativo (`/visor`)**, que lê arquivos `report.json` **100% no navegador** (zero rotas `/api`, zero SSRF).
+O site publicado é a landing comercial B2B e o **Visor Interativo (`/visor`)**, que lê arquivos `report.json` **100% no navegador** (zero rotas `/api`, zero SSRF). O nome comercial é **CheckoutGuard**; comandos e caminhos internos (`npm run ronda`, `ronda-out/`) mantêm o slug histórico para compatibilidade.
 
 ## O que funciona hoje
 
@@ -15,7 +15,7 @@ O site publicado apresenta a proposta técnica B2B e o **Visor Interativo (`/vis
 | GitHub Actions Agendado (R$ 0) | `docs/ronda-github-action-template.yml` + `docs/store-manifest.example.json` — execução em VM Ubuntu efêmera a cada 30 min com reteste automático em 30s |
 | Visor Interativo + Landing B2B | `/` e `/visor` — 2 demos reais em 1 clique sem login (falha Scriban 500 Wake + ronda 5/5 aprovada), upload local até 5 MB, planos transparentes e indexação SEO pública |
 
-## O que a Ronda nunca faz (por contrato)
+## O que o CheckoutGuard nunca faz (por contrato)
 
 - Pedido concluído, preenchimento de cartão, 3DS ou `checkoutComplete`
 - Patch em tema (`apply: false`), acesso a Admin ou FTP

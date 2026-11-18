@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Privacidade (LGPD)",
-  description: "Política de privacidade e limites técnicos do visor local e do motor Safe-Checkout da Ronda.",
+  description: "Política de privacidade e limites técnicos do visor local e do motor Safe-Checkout do CheckoutGuard.",
 };
 
 export default function PrivacidadePage() {
@@ -35,7 +35,7 @@ export default function PrivacidadePage() {
               carrinho no encerramento.
             </li>
             <li>
-              <strong>Proibições permanentes:</strong> a Ronda nunca preenche dados de cartão, nunca executa{" "}
+              <strong>Proibições permanentes:</strong> o CheckoutGuard nunca preenche dados de cartão, nunca executa{" "}
               <code>checkoutComplete</code>, nunca acessa painel Admin e nunca altera arquivos de tema (
               <code>apply: false</code>).
             </li>
