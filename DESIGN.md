@@ -1,20 +1,24 @@
 # DESIGN.md — CheckoutGuard (repo slug `ronda`)
 
-Direção do usuário (18/11/2026): o nome **Ronda** foi substituído pela marca comercial **CheckoutGuard** — *"Monitoramento Inteligente de Jornada & Checkout para E-commerce"*. Reformulação visual completa da landing (zero cara de dashboard, visual único B2B Commerce Security, distinto dos demais produtos do usuário). Comandos e caminhos internos (`npm run ronda`, `ronda-out/`) mantêm o slug histórico.
+Direção do usuário (18/11/2026, 2ª reprovada): o nome **Ronda** virou marca comercial **CheckoutGuard** e a landing foi reprovada duas vezes — "parece relatório técnico, não um site de venda". Reformulação editorial definitiva: **página de venda, não relatório**. Comandos e caminhos internos (`npm run ronda`, `ronda-out/`) mantêm o slug histórico.
 
 ## Duas camadas, duas identidades
 
-1. **Landing comercial `/` (nova, 2026-11):** página de venda para Meta Ads, foco em dono de loja e agência. Hero navy com simulação animada da jornada (`Home → Produto → Frete CEP → Checkout`) e mockup da notificação WhatsApp em ~30s.
-2. **Ferramenta técnica `/visor` (mantém o tom "laudo"):** documento de prova, sem conserto. Frase de 3 s: "Laudo da loja, com prova. A gente não mexe no site." Sem serif.
+1. **Landing comercial `/` (editorial, 18/11 v2):** página de venda com DNA de documento (o produto é um laudo). Hero serifado de afirmação, não de explicação; o defeito 200/500 é composição tipográfica; a cena do WhatsApp é estática e grande; planos são linhas tipográficas, não cards; comparativo honesto existe, mas fora do fluxo de venda.
+2. **Ferramenta técnica `/visor` (mantém o tom "laudo"):** documento de prova, sem conserto. Frase de 3 s: "Laudo da loja, com prova. A gente não mexe no site." Sem serif no corpo da ferramenta.
 
-## Tokens — landing comercial (`cg-*`)
+## Frase de leitura (brief da skill ui-humanizer)
 
-- `--cg-navy` `#090D16` (hero e rodapé) · `--cg-navy-2` `#10182B` (painéis do hero)
-- Seções claras: `--cg-paper` `#FFFFFF` · `--cg-mist` `#F4F7FB` (alternância rigorosa navy ↔ claro)
-- Sinal: `--cg-signal` `#00C853` (CTA, verde de sucesso) · Alerta: `--cg-alert` `#EF4444` (erro, prejuízo) · Parada segura: `--cg-stop` `#2563EB`
-- Tinta `#0B1220`, texto secundário `#475569`, linhas `#E2E8F0`
-- Tipo: IBM Plex Sans/Mono quando instaladas localmente; caso contrário, pilhas de sistema. O build não baixa fontes.
-- Cards com raio 12–16 px e sombras suaves; botões com alvo ≥ 44 px; tabela comparativa com zebra claro.
+Página de venda do CheckoutGuard para dono de loja e agência que paga tráfego — intenção **convencer**, linguagem direta de e-commerce brasileiro, stack Next.js estática sem downloads. Variação **alta** (seções com larguras e alinhamentos desiguais), Movimento **baixo** (zero animação decorativa; a única mudança dinâmica é a calculadora reagindo ao slider), Densidade **baixa-média** (copy curta com fatos reais).
+
+## Tokens — landing comercial (`cg-*`, v2)
+
+- Papel `--cg-paper` `#F6F3EC` · tom de seção `--cg-paper-deep` `#EFE9DD` (sem navy; o azul morreu com o visual de dashboard)
+- Tinta `--cg-ink` `#14181D` · secundário `#5B6472` · fio de cabelo `#D8D2C4`
+- Acento único de alarme `--cg-alarm` `#C13A2E` (o prejuízo, o erro 500, o vermelho da perda) · verde de seguro `--cg-safe` `#1B7A4A` (só em "passou" e "evitado")
+- Display: **serif Georgia** com motivo (laudo/documento) — `clamp(2.7rem…5rem)` no hero, contraste de tamanho real; corpo: Segoe UI/system-ui; mono **só dentro de artefatos de evidência** (JSON, hash, horários)
+- Raio 4–10px, uma regra de sombra; sem pill, sem chip pulsante, sem gradiente, sem emoji-ícone
+- Divisores: hairlines `#D8D2C4`; seções de ritmos diferentes (hero 62rem, cena 2 colunas assimétricas, planos linhas full-width)
 
 ## Tokens — ferramenta /visor (mantidos, classe `slip`/`capa`)
 
@@ -23,6 +27,7 @@ Direção do usuário (18/11/2026): o nome **Ronda** foi substituído pela marca
 
 ## Acessibilidade (ambas as camadas)
 
-Skip link, alvo 44 px, foco 2 px, prints com texto, `@media print` fundo branco, `prefers-reduced-motion` (simulação do hero congela no estado final; pulsos desativados).
+Skip link, alvo ≥ 44px, foco 2px tinta, `@media print` fundo branco, `prefers-reduced-motion` (landing v2 não tem animação decorativa, então nada a suprimir).
 
-Fonte: `Shared/AgentOps/DESIGN-laudo.md` + feedback do usuário de 18/11/2026.
+Fonte: `Shared/AgentOps/DESIGN-laudo.md`, feedback do usuário de 18/11/2026 e skill `ui-humanizer` (SKILL.md).
+
