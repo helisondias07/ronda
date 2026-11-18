@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "store": "loja-exemplo-wake",
+  "platform": "wake",
+  "primaryOrigin": "https://www.lojaexemplo.com.br",
+  "allowedSubdomains": [
+    "checkout.lojaexemplo.com.br",
+    "*.checkout.fbits.store"
+  ],
+  "allowedStaticCdns": [
+    "*.fbitsstatic.net"
+  ],
+  "authorizedBy": "Agência Responsável <qa@agencia.com.br>",
+  "authorizedAt": "2026-11-18T10:00:00.000Z",
+  "stopBeforePayment": true,
+  "cleanCartOnTeardown": true,
+  "journey": {
+    "startPath": "/",
+    "categoryPath": "/lancamentos",
+    "productPath": "/produto-piloto/p",
+    "cartPath": "/carrinho",
+    "checkoutPath": "/checkout",
+    "postalCode": "01310-100"
+  }
+}

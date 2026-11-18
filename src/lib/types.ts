@@ -1,3 +1,5 @@
+import type { StoreTargetManifest } from "./store-manifest";
+
 export type StepId = "home" | "categoria" | "produto" | "carrinho" | "checkout";
 
 export type ShotEvidence = {
@@ -44,7 +46,7 @@ export type PageFacts = {
 
 export type IsolationNote = {
   hostedFetch: false;
-  methods: "GET";
+  methods: "GET" | "SAFE-CHECKOUT";
   figmaFaked: false;
   payment: false;
 };
@@ -87,8 +89,8 @@ export type InstitutionalPage = {
 
 export type Report = {
   store: string;
-  platform: "wake-mock" | "wake";
-  target: "fixture" | "authorized-local";
+  platform: "wake-mock" | "wake" | "nuvemshop" | "shopify" | "vtex";
+  target: "fixture" | "authorized-local" | "authorized-manifest";
   steps: StepResult[];
   stopped_before_payment: boolean;
   consoleErrors: string[];
@@ -117,6 +119,8 @@ export type Report = {
     startedAt: string;
     finishedAt: string;
     durationMs: number;
+    fixtureSha256?: string;
+    cartCleaned?: boolean;
   };
 };
 
@@ -144,4 +148,5 @@ export type VisualCompare = {
 
 export type Target =
   | { kind: "fixture" }
-  | { kind: "authorized-local"; url: string };
+  | { kind: "authorized-local"; url: string }
+  | { kind: "authorized-manifest"; url: string; manifest: StoreTargetManifest };

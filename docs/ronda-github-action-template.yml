@@ -1,0 +1,88 @@
+# Template pronto: Ronda Safe-Checkout agendado a custo R$ 0 (GitHub Actions)
+# Copie para .github/workflows/ronda-scheduled.yml em um repositório da agência/loja
+# e salve o StoreTargetManifest revisado em config/store-manifest.json.
+name: ronda-safe-checkout
+
+on:
+  schedule:
+    # A cada 30 minutos em VM Ubuntu efêmera (sem acesso à rede interna)
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+    inputs:
+      viewport:
+        description: "Viewport da vistoria (ex.: 1280x720 ou 390x844)"
+        required: false
+        default: "1280x720"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ronda-safe-checkout-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  vistoria:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout Ronda Runner
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Instalar dependências e Chromium headless
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Executar Ronda (Tentativa 1 + Reteste Anti-Falso-Positivo em 30s)
+        id: ronda_run
+        env:
+          STORE_MANIFEST: config/store-manifest.json
+          STORE_ORIGIN: ${{ vars.RONDA_PRIMARY_ORIGIN }}
+          VIEWPORT: ${{ inputs.viewport || '1280x720' }}
+        run: |
+          set +e
+          npx tsx src/cli/run.ts --manifest "$STORE_MANIFEST" --base-url "$STORE_ORIGIN" --viewport "$VIEWPORT"
+          STATUS=$?
+          if [ "$STATUS" -ne 0 ]; then
+            echo "::warning::Primeira tentativa falhou (exit $STATUS). Aguardando 30s para confirmação anti-falso-positivo..."
+            sleep 30
+            npx tsx src/cli/run.ts --manifest "$STORE_MANIFEST" --base-url "$STORE_ORIGIN" --viewport "$VIEWPORT"
+            STATUS=$?
+          fi
+          exit "$STATUS"
+
+      - name: Publicar artefato do laudo (report.json, report.html e prints)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ronda-laudo-${{ github.run_id }}
+          path: ronda-out/
+          retention-days: 14
+          if-no-files-found: warn
+
+      - name: Disparar alerta Slack/Webhook em falha confirmada (2x seguidas)
+        if: failure() && env.ALERT_WEBHOOK_URL != ''
+        env:
+          ALERT_WEBHOOK_URL: ${{ secrets.RONDA_ALERT_WEBHOOK_URL }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          SUMMARY=$(node -e '
+            const fs = require("node:fs");
+            try {
+              const r = JSON.parse(fs.readFileSync("ronda-out/report.json", "utf8"));
+              const failed = (r.steps || []).find((s) => !s.pass);
+              console.log(`Loja: ${r.store} (${r.platform}) | Etapa: ${failed ? failed.id : "desconhecida"} | Erro: ${r.error || (failed && failed.error) || "verificar artefato"}`);
+            } catch {
+              console.log("Falha na ronda antes de gravar report.json");
+            }
+          ')
+          curl -fsS -X POST "$ALERT_WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -d "$(jq -n --arg text "🚨 [Ronda Safe-Checkout] Queda confirmada após reteste: $SUMMARY — Evidências: $RUN_URL" '{text: $text}')"

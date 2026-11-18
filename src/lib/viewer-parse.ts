@@ -37,10 +37,21 @@ function asRun(value: unknown): Report["run"] {
   const startedAt = typeof run.startedAt === "string" ? run.startedAt : undefined;
   const finishedAt = typeof run.finishedAt === "string" ? run.finishedAt : undefined;
   const durationMs = typeof run.durationMs === "number" ? run.durationMs : NaN;
+  const fixtureSha256 = typeof run.fixtureSha256 === "string" && /^[a-f0-9]{64}$/.test(run.fixtureSha256)
+    ? run.fixtureSha256
+    : undefined;
+  const cartCleaned = typeof run.cartCleaned === "boolean" ? run.cartCleaned : undefined;
   if (!id || !startedAt || !finishedAt || !Number.isFinite(Date.parse(startedAt)) || !Number.isFinite(Date.parse(finishedAt)) || !Number.isFinite(durationMs) || durationMs < 0) {
     return undefined;
   }
-  return { id, startedAt, finishedAt, durationMs };
+  return {
+    id,
+    startedAt,
+    finishedAt,
+    durationMs,
+    ...(fixtureSha256 ? { fixtureSha256 } : {}),
+    ...(cartCleaned !== undefined ? { cartCleaned } : {}),
+  };
 }
 
 /** Lê suggestion.text / hypothesis / string; objetos desconhecidos viram JSON, nunca [object Object]. */
@@ -172,8 +183,14 @@ export function parseReport(raw: string): { ok: true; report: Report } | { ok: f
     const steps = rawSteps.map(asStep);
     const finalized = finalizeReport({
       store: typeof data.store === "string" && data.store ? data.store : "laudo colado",
-      platform: data.platform === "wake" ? "wake" : "wake-mock",
-      target: data.target === "authorized-local" ? "authorized-local" : "fixture",
+      platform:
+        data.platform === "wake" || data.platform === "nuvemshop" || data.platform === "shopify" || data.platform === "vtex"
+          ? data.platform
+          : "wake-mock",
+      target:
+        data.target === "authorized-local" || data.target === "authorized-manifest"
+          ? data.target
+          : "fixture",
       steps,
       stopped_before_payment: Boolean(data.stopped_before_payment),
       consoleErrors: normalizeConsoleErrors(data.consoleErrors),
@@ -198,7 +215,10 @@ export function parseReport(raw: string): { ok: true; report: Report } | { ok: f
       run: asRun(data.run),
       isolation: {
         hostedFetch: false,
-        methods: "GET",
+        methods:
+          data.isolation && typeof data.isolation === "object" && (data.isolation as { methods?: unknown }).methods === "SAFE-CHECKOUT"
+            ? "SAFE-CHECKOUT"
+            : "GET",
         figmaFaked: false,
         payment: false,
       },
