@@ -19,7 +19,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   const planId = (body as { planId?: unknown } | null)?.planId;
   const env = {
     stripeSecretKey: process.env.STRIPE_SECRET_KEY,
-    baseUrl: process.env.NEXT_PUBLIC_BASE_URL,
+    baseUrl: process.env.NEXT_PUBLIC_BASE_URL || new URL(request.url).origin,
   };
   const planned = planCheckoutResponse(env, planId);
   if (!planned.ok) {
