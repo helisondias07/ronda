@@ -13,6 +13,8 @@ export type Plan = {
   href: string;
   cta: string;
   featured: boolean;
+  /** Assinatura mensal (loja/agência) ou cobrança única (express). */
+  recurring: boolean;
 };
 
 const MAILTO_BASE = "mailto:helisondias07@gmail.com";
@@ -37,6 +39,7 @@ export const PLANS: Plan[] = [
       )}`,
     cta: "Pedir a auditoria",
     featured: false,
+    recurring: false,
   },
   {
     id: "loja",
@@ -57,6 +60,7 @@ export const PLANS: Plan[] = [
       )}`,
     cta: "Agendar piloto",
     featured: false,
+    recurring: true,
   },
   {
     id: "agencia",
@@ -77,6 +81,7 @@ export const PLANS: Plan[] = [
       )}`,
     cta: "Falar sobre a carteira",
     featured: true,
+    recurring: true,
   },
 ];
 

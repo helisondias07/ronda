@@ -25,8 +25,15 @@ export default function PrivacidadePage() {
               permanecem em memória na aba do usuário (art. 7º, I, Lei 13.709/2018).
             </li>
             <li>
-              <strong>Zero SSRF no site publicado:</strong> esta aplicação Next.js não possui rotas <code>/api</code>,
-              não abre navegador headless remoto e não faz requisições a lojas de terceiros.
+              <strong>Rotas públicas controladas:</strong> o site expõe apenas <code>/api/checkout</code> e{" "}
+              <code>/api/webhooks/stripe</code> (pagamento hospedado, verificado por guardrail de isolamento).
+              Nenhuma rota executa navegador, acessa lojas de terceiros ou aceita URL arbitrária — o anti-SSRF
+              permanece intacto.
+            </li>
+            <li>
+              <strong>Pagamento sem tocar no cartão (PCI-DSS por design):</strong> o comprador é redirecionado
+              para a página segura do Stripe; nenhum número de cartão, CVV ou dado de pagamento transita ou
+              é armazenado nos servidores do CheckoutGuard.
             </li>
             <li>
               <strong>Execução autorizada no CLI / CI:</strong> o motor de vistoria exige manifesto explícito (

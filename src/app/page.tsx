@@ -1,6 +1,7 @@
 import { LaudoPreview } from "./components/laudo-preview";
 import { LossCalculator } from "./components/loss-calculator";
 import { WhatsappScene } from "./components/whatsapp-scene";
+import { CheckoutButton } from "./components/checkout-button";
 import { PLANS } from "../lib/plans";
 
 export default function HomePage() {
@@ -138,15 +139,19 @@ export default function HomePage() {
                   <li key={bullet}>{bullet}</li>
                 ))}
               </ul>
-              <a className={plan.featured ? "cg-cta" : "cg-cta-quiet"} href={plan.href}>
-                {plan.cta}
-              </a>
+              <CheckoutButton
+                planId={plan.id}
+                fallbackHref={plan.href}
+                label={plan.cta}
+                variant={plan.featured ? "primary" : "quiet"}
+              />
             </article>
           ))}
           <p className="cg-plans-note">
-            Onboarding mediante manifesto de autorização da loja; cobrança ativada somente em ambiente
-            comercial dedicado. Esta página é uma vitrine técnica em instância Vercel Hobby — sem checkout
-            online e sem processamento de pagamento aqui.
+            Pagamento por Stripe Checkout hospedado: o cartão nunca passa pelo nosso servidor. Enquanto as
+            chaves de produção não estão ativas, o botão abre uma simulação honesta do fluxo — o e-mail
+            continua valendo para contratar com acompanhamento. Onboarding mediante manifesto de
+            autorização da loja para as rondas.
           </p>
         </section>
 
