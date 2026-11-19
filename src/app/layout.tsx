@@ -1,5 +1,13 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import "@fontsource/bodoni-moda/latin-500.css";
+import "@fontsource/bodoni-moda/latin-600.css";
+import "@fontsource/archivo/latin-400.css";
+import "@fontsource/archivo/latin-500.css";
+import "@fontsource/archivo/latin-600.css";
+import "@fontsource/archivo/latin-700.css";
+import "@fontsource/ibm-plex-mono/latin-400.css";
+import "@fontsource/ibm-plex-mono/latin-500.css";
 import "./globals.css";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://ronda-tawny-xi.vercel.app";

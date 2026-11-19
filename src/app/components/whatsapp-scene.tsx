@@ -5,26 +5,26 @@
 export function WhatsappScene() {
   return (
     <div className="cg-scene">
-      <div className="cg-scene-beats">
+      <div>
         <div className="cg-beat">
-          <span className="cg-beat-time">14h32:00</span>
-          <p className="cg-beat-text">
-            Um template quebra na Wake. A página do produto responde{" "}
-            <strong>HTTP 200</strong> — o uptime continua verde, o anúncio continua rodando.
+          <time>14h32:00</time>
+          <p>
+            Um template quebra na Wake. A página do produto responde <strong>HTTP 200</strong> — o uptime
+            continua verde, o anúncio continua rodando.
           </p>
         </div>
         <div className="cg-beat">
-          <span className="cg-beat-time">14h32:20</span>
-          <p className="cg-beat-text">
+          <time>14h32:20</time>
+          <p>
             A ronda lê o corpo da resposta e encontra o erro escondido. Um reteste independente confirma:
             não é alarme falso.
           </p>
         </div>
         <div className="cg-beat">
-          <span className="cg-beat-time">14h32:30</span>
-          <p className="cg-beat-text">
-            O WhatsApp da loja toca. Trinta segundos depois da quebra, antes do rombo virar relatório de fim
-            de dia.
+          <time>14h32:30</time>
+          <p>
+            O WhatsApp da loja toca. Trinta segundos depois da quebra, antes do rombo virar relatório de
+            fim de dia.
           </p>
         </div>
         <p className="cg-scene-foot">
@@ -33,25 +33,15 @@ export function WhatsappScene() {
         </p>
       </div>
 
-      <figure className="cg-device" aria-label="Simulação da notificação chegando no WhatsApp da loja, 30 segundos depois da quebra confirmada pelo reteste.">
-        <div className="cg-device-bar">
-          <span className="cg-device-app">WhatsApp · loja</span>
-          <span className="cg-device-time">14:32</span>
-        </div>
-        <div className="cg-device-body">
-          <div className="cg-msg">
-            <p className="cg-msg-head">CheckoutGuard</p>
-            <p className="cg-msg-text">
-              Quebra confirmada na página do produto “Tênis Runner”. Botão Comprar sem preço: erro 500
-              dentro de um HTTP 200 — o ping não enxerga isso.
-            </p>
-            <p className="cg-msg-text">Reteste confirmou. Etapa 3 de 5. Nenhum pedido criado.</p>
-            <span className="cg-msg-meta">14:32 · entregue ✓✓</span>
-          </div>
-        </div>
-        <figcaption className="cg-device-caption">
-          Simulação fiel do formato real do aviso.
-        </figcaption>
+      <figure className="cg-msg" aria-label="Simulação do aviso chegando no WhatsApp da loja, 30 segundos depois da quebra confirmada pelo reteste.">
+        <p className="cg-msg-head">WhatsApp · CheckoutGuard</p>
+        <p className="cg-msg-text">
+          Quebra confirmada na página do produto “Tênis Runner”. Botão Comprar sem preço: erro 500 dentro
+          de um HTTP 200 — o ping não enxerga isso.
+        </p>
+        <p className="cg-msg-text">Reteste confirmou. Etapa 3 de 5. Nenhum pedido criado.</p>
+        <span className="cg-msg-meta">14:32 · entregue</span>
+        <figcaption className="cg-msg-caption">Simulação fiel do formato real do aviso.</figcaption>
       </figure>
     </div>
   );

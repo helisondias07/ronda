@@ -21,11 +21,11 @@ export function LossCalculator() {
 
   return (
     <div className="cg-calc">
-      <div className="cg-calc-ctl">
-        <label htmlFor="cg-revenue-slider">
-          Quanto a sua loja fatura por mês?
-          <span className="cg-calc-answer" aria-live="polite">{brl.format(estimate.revenue)}</span>
-        </label>
+      <div>
+        <label htmlFor="cg-revenue-slider">Faturamento mensal da loja</label>
+        <output className="cg-calc-value" htmlFor="cg-revenue-slider">
+          {brl.format(estimate.revenue)}
+        </output>
         <input
           id="cg-revenue-slider"
           type="range"
@@ -34,21 +34,19 @@ export function LossCalculator() {
           step={LOSS_STEP_REVENUE}
           value={revenue}
           onChange={(event) => setRevenue(Number(event.currentTarget.value))}
-          aria-describedby="cg-calc-assumptions"
+          aria-describedby="cg-calc-legend"
         />
-        <p className="cg-small" id="cg-calc-assumptions">
-          Estimativa com hipóteses visíveis: receita dividida em 30 dias × 24 h de horário plano (campanha
-          concentra mais) e janela guardada de 5 min 30 s — alerta em 30 s mais a resposta da sua equipe. Sem
-          monitor, duas horas de botão quebrado ficam assim:
+        <p className="cg-calc-legend" id="cg-calc-legend">
+          receita dividida em 30 dias × 24 h de horário plano; campanha concentra mais. Janela guardada de
+          5 min 30 s — alerta em 30 s mais a resposta da equipe.
         </p>
       </div>
 
-      <div className="cg-calc-result">
+      <div>
+        <p className="cg-calc-out-label">perda estimada · 2 horas fora</p>
         <p className="cg-calc-figure">{brl.format(estimate.lossTwoHours)}</p>
-        <p className="cg-calc-figure-note">
-          queimados em 2 h de checkout quebrado · {brl.format(estimate.revenuePerHour)} por hora
-        </p>
-        <p className="cg-calc-figure-sub">
+        <p className="cg-calc-unit">{brl.format(estimate.revenuePerHour)} por hora · estimativa, não promessa</p>
+        <p className="cg-calc-sub">
           Com o aviso chegando em 30 s, a janela cai para {brl.format(estimate.guardedLoss)} —{" "}
           <strong>{brl.format(estimate.avoidedPerIncident)} evitados por incidente</strong>, cerca de{" "}
           {brl.format(estimate.avoidedPerMonth)} por mês com um incidente por semana.
